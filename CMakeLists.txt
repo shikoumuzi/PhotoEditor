@@ -58,7 +58,7 @@ else()
     else()
         add_executable(PhotoEditor
             ${PROJECT_SOURCES}
-        )
+         "WorkSpace/workspace.h" "WorkSpace/workspace.cpp" "PhotoEditor/PhotoEditor.h" "PhotoEditor/PhotoEditor.cpp")
     endif()
 endif()
 
