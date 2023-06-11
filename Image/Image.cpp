@@ -1,13 +1,16 @@
 #include"Image.h"
+#include<Eigen/Core>
+#include<Eigen/Geometry>
 
 namespace PhotoEdit {
 
 	struct Image::ImageData {
-
+		Eigen::MatrixXd m;
 	};
 
 	Image::Image()
 	{
+		this->m_data->m;
 	}
 
 	Image::~Image()
