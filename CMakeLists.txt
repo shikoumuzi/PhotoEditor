@@ -9,9 +9,18 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# BOOST的设置
+# 设置不使用静态库
+set (Boost_USE_STATIC_LIBS OFF)
+# 设置使用多线程库
+set (Boost_USE_MULTITHREADED ON)
+# 设置不使用静态运行时库
+set (Boost_USE_STATIC_RUNTIME OFF)
+
 set(OpenCV_DIR "D:/opencv/build")
 set(Eigen3_DIR "F:/CodeLibrary/eigen/eigen-3.3.9/install/share/eigen3/cmake")
 set(Qt_DIR $ENV{QT_DIR_5_15_2_MSVC2019_64})
+set(BOOST_CODE_LIBRARY_PATH F:/CodeLibrary/boost_1_79_0)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Qt_DIR}})
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Qt_DIR}/bin)
@@ -27,6 +36,21 @@ if(OpenCV_FOUND)
     message(STATUS "OpenCV 库信息")
     message(STATUS "OpenCV_INCLUDE_DIRS=${OpenCV_INCLUDE_DIRS}")
     message(STATUS "OpenCV_LIBRARY_DIRS=${OpenCV_LIBRARY_DIRS}")
+endif()
+
+# 添加boost路径
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${BOOST_CODE_LIBRARY_PATH})
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${BOOST_CODE_LIBRARY_PATH}/stage/lib)
+set(BOOST_ROOT ${BOOST_CODE_LIBRARY_PATH})# 设置自己的路径
+
+find_package(BOOST REQUIRED  COMPONENTS  system filesystem asio)
+# target_link_libraries 需要在add_excutable后面
+if(Boost_FOUND)
+	include_directories(${Boost_INCLUDE_DIRS}) 
+	link_directories(${Boost_LIBRARY_DIRS})
+	message(STATUS "Boost 库信息:")
+	message(STATUS "Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
+	message(STATUS "Boost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}")
 endif()
 
 # set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${Eigen3_DIR}/include)
@@ -88,6 +112,10 @@ endif()
 
 if(Eigen3_FOUND)
     target_link_libraries(PhotoEditor PUBLIC Eigen3::Eigen)
+endif()
+
+if(Boost_FOUND)
+	target_link_libraries(PhotoEditor PUBLIC ${BOOST_LIBRARIES})
 endif()
 
 set_target_properties(PhotoEditor PROPERTIES

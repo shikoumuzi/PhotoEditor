@@ -3,15 +3,22 @@
 #include<qimage>
 #include<opencv2/core/core.hpp> 
 #include<opencv2/highgui/highgui.hpp>   
+#include<boost/filesystem/path.hpp>
+
 namespace PhotoEdit {
 	class Image
 	{
+	public:
+		using Path = boost::filesystem::path;
 	public: 
 		struct ImageData;
 	public:
 		Image();
 		~Image();
 
+	public:
+		bool imread(Path path);
+		bool imread(Path& path);
 	public:
 		QImage* toQImage();
 		QPixmap* toQPixmap();
