@@ -8,12 +8,13 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{QT_DIR_5_15_2_MSVC2019_64})
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{QT_DIR_5_15_2_MSVC2019_64}/bin)
-
-message(STATUS "QT_DIR_5_15_2_MSVC2019_64 = $ENV{QT_DIR_5_15_2_MSVC2019_64}")
 
 set(OpenCV_DIR "D:/opencv/build")
+set(Eigen3_DIR "F:/CodeLibrary/eigen/eigen-3.3.9/install")
+set(Qt_DIR $ENV{QT_DIR_5_15_2_MSVC2019_64})
+
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Qt_DIR}})
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Qt_DIR}/bin)
 
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${OpenCV_DIR}/include/opencv2)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${OpenCV_DIR}/bin)
@@ -28,6 +29,17 @@ if(OpenCV_FOUND)
     message(STATUS "OpenCV_LIBRARY_DIRS=${OpenCV_LIBRARY_DIRS}")
 endif()
 
+include_directories(${Eigen3_DIR})
+set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${Eigen3_DIR}/include)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Eigen3_DIR}/share/eigen3/cmake)
+set(Eigen3_ROOT ${Eigen3_DIR})
+
+find_package(Eigen3 CONFIG REQUIRED)
+if(Eigen3_FOUND)
+    include_directories(${Eigen3_INCLUDE_DIRS})
+    message(STATUS "Eigen 库信息")
+    message(STATUS "Eigen_INCLUDE_DIRS=${Eigen3_INCLUDE_DIRS}")
+ endif()
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Core Gui)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Core Gui)
@@ -57,15 +69,26 @@ else()
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(PhotoEditor
-            ${PROJECT_SOURCES}
-         "WorkSpace/workspace.h" "WorkSpace/workspace.cpp" "PhotoEditor/PhotoEditor.h" "PhotoEditor/PhotoEditor.cpp")
+             ${PROJECT_SOURCES}
+             "WorkSpace/workspace.h" 
+             "WorkSpace/workspace.cpp" 
+             "PhotoEditor/PhotoEditor.h" 
+             "PhotoEditor/PhotoEditor.cpp" 
+             "Image/Image.h" 
+             "Image/Image.cpp")
     endif()
 endif()
 
 target_link_libraries(PhotoEditor PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(PhotoEditor PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(PhotoEditor PRIVATE Qt${QT_VERSION_MAJOR}::Gui)
 
 if(OpenCV_FOUND)
     target_link_libraries(PhotoEditor PUBLIC ${OpenCV_LIBRARIES})
+endif()
+
+if(Eigen3_FOUND)
+    target_link_libraries(PhotoEditor PUBLIC Eigen3::Eigen)
 endif()
 
 set_target_properties(PhotoEditor PROPERTIES

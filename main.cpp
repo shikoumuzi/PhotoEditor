@@ -2,10 +2,12 @@
 
 #include <QApplication>
 
+
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    PhotoEditorMainWindow w;
+    PhotoEdit::PhotoEditorMainWindow w;
     w.show();
     return a.exec();
 }

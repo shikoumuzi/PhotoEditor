@@ -4,18 +4,21 @@
 #include<qlabel.h>
 #include<qlayout.h>
 #include<atlalloc.h>
+namespace PhotoEdit {
 
-PhotoEditorMainWindow::PhotoEditorMainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::PhotoEditorMainWindow)
-{
-    ui->setupUi(this);
-    
-    
-}
+    PhotoEditorMainWindow::PhotoEditorMainWindow(QWidget* parent)
+        : QMainWindow(parent)
+        , ui(new Ui::PhotoEditorMainWindow)
+    {
+        ui->setupUi(this);
 
-PhotoEditorMainWindow::~PhotoEditorMainWindow()
-{
-    delete ui;
+
+    }
+
+    PhotoEditorMainWindow::~PhotoEditorMainWindow()
+    {
+        delete ui;
+    }
+
 }
 
