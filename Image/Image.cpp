@@ -5,6 +5,8 @@
 // eigen 声明要在cv2前面
 #include <opencv2/core/eigen.hpp>
 #include<opencv2/opencv.hpp>
+
+
 namespace PhotoEdit {
 
 	struct Image::ImageData 
@@ -16,18 +18,19 @@ namespace PhotoEdit {
 
 
 	Image::Coordinates::Coordinates():parent(nullptr),row(-1),col(-1){}
-
 	Image::Coordinates::Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
 	Image::Coordinates::~Coordinates()
 	{
 		this->parent = nullptr;
 	}
+
 	void Image::Coordinates::operator=(Coordinates& that)
 	{
 		this->row = that.row;
 		this->col = that.col;
-		this->parent = that.parent
+		this->parent = that.parent;
 	}
+
 
 	Image::Image():m_data(new struct ImageData)
 	{
@@ -44,6 +47,7 @@ namespace PhotoEdit {
 			delete this->m_data;
 		}
 	}
+
 
 	bool Image::imread(Path& path)
 	{
@@ -82,7 +86,6 @@ namespace PhotoEdit {
 	}
 		
 
-
 	QImage* Image::toQImage()
 	{
 		if (this->m_data->m.empty())
@@ -120,28 +123,29 @@ namespace PhotoEdit {
 		return &this->m_data->m;
 	}
 
+
 	void Image::finalize(void* image)
 	{
 		if(image != &this->m_data->m)
 			delete image;
 	}
 
+
 	Image::CMatrix* Image::dilate(CMatrix& cm, int iterator_times, int OPTION)
 	{
 
 		return nullptr;
 	}
-
 	Image::CMatrix* Image::dilate(CMatrix& cm, int iterator_times, Coordinates& start_co, Coordinates& end_co, int OPTION)
 	{
 		return nullptr;
 	}
 
+
 	Image::CMatrix* Image::erode(CMatrix& cm, int iterator_times, int OPTION)
 	{
 		return nullptr;
 	}
-
 	Image::CMatrix* Image::erode(CMatrix& cm, int iterator_times, Coordinates& start_co, Coordinates& end_co, int OPTION)
 	{
 		return nullptr;
@@ -181,6 +185,21 @@ namespace PhotoEdit {
 	{
 	}
 
+	void Image::syncTotalQImageInThread()
+	{
+	}
+
+	void Image::syncPartQImageInThread(Coordinates& start_co, Coordinates& end_co)
+	{
+	}
+
+	void Image::syncTotalCMatrixInThread()
+	{
+	}
+
+	void Image::syncPartCMatrixInThread(Coordinates& start_co, Coordinates& end_co)
+	{
+	}
 
 
 	void Image::cv2eigenC3(CMatrix& cm, EMatrix& em)
@@ -195,6 +214,7 @@ namespace PhotoEdit {
 			}
 		}
 	}
+
 	void Image::eigen2cvC3(EMatrix& em, CMatrix& cm)
 	{
 		for (int i = 0; i < cm.rows; ++i)
@@ -207,6 +227,7 @@ namespace PhotoEdit {
 			}
 		}
 	}
+
 	void Image::eigen2qimageC3(EMatrix& em, QImage& qm)
 	{
 		QRgb* line = nullptr;

@@ -77,6 +77,10 @@ namespace PhotoEdit {
 		void syncTotalCMatrix();
 		void syncPartCMatrix(Coordinates& start_co, Coordinates& end_co);
 
+		void syncTotalQImageInThread();
+		void syncPartQImageInThread(Coordinates& start_co, Coordinates& end_co);
+		void syncTotalCMatrixInThread();
+		void syncPartCMatrixInThread(Coordinates& start_co, Coordinates& end_co);
 	public:// ×ª»»½Ó¿Ú
 		static void cv2eigenC3(CMatrix&, EMatrix&);
 		static void eigen2cvC3(EMatrix&, CMatrix&);
