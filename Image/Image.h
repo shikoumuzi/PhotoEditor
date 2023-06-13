@@ -1,4 +1,5 @@
 #ifndef __IMAGE_H__
+#define __IMAGE_H__
 #include<qpixmap.h>
 #include<qimage>
 #include<qstring.h>
@@ -10,6 +11,20 @@
 namespace PhotoEdit {
 	class Image
 	{
+	public:
+		class Coordinates
+		{
+		public:
+			Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
+			~Coordinates()
+			{
+				this->parent = nullptr;
+			}
+		public:
+			int row;
+			int col;
+			Image* parent;
+		};
 	public:
 		using Path = boost::filesystem::path;
 		using EVector = Eigen::Vector3d;

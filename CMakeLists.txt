@@ -98,7 +98,7 @@ else()
              "PhotoEditor/PhotoEditor.h" 
              "PhotoEditor/PhotoEditor.cpp" 
              "Image/Image.h" 
-             "Image/Image.cpp")
+             "Image/Image.cpp" "Operator/Operator.h" "Thread/ThreadFactory.h" "Operator/OperatorFactory.h")
     endif()
 endif()
 
