@@ -1,0 +1,15 @@
+#ifndef __ERROR_H__
+#define __ERROR_H__
+
+enum MERROR
+{
+	SUCCESS = 0,
+	CMATRIX_EMPTY,
+	READ_FAILED,
+	FILE_EXTENISON_ILLEGALITY,
+	SAVE_FAILED,
+	IMAGE_NO_COMPARE,
+	ERROR_ARG,
+};
+
+#endif // !__ERROR_H__

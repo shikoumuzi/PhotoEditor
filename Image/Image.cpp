@@ -5,7 +5,7 @@
 // eigen 声明要在cv2前面
 #include <opencv2/core/eigen.hpp>
 #include<opencv2/opencv.hpp>
-
+#include<qdebug.h>
 
 namespace PhotoEdit {
 
@@ -49,42 +49,46 @@ namespace PhotoEdit {
 	}
 
 
-	bool Image::imread(Path& path)
+	int Image::imread(Path& path)
 	{
 		this->m_data->m = cv::Mat( cv::imread(path.string()));
 		if (this->m_data->m.empty())
 		{
-			return false;
+			qWarning("Image::imread: read failed");
+			return MERROR::READ_FAILED;
 		}
-		return true;
+		return 0;
 	}
-	bool Image::imshow(String& windows_title)
+	int Image::imshow(const String& windows_title)
 	{
-		if (this->m_data->m.empty()) 
+		return Image::imshow(this->m_data->m, windows_title);
+	}
+	int Image::imshow(const Image::CMatrix& cmatrix, const Image::String& windows_title)
+	{
+		if (cmatrix.empty())
 		{
-			return false;
+			qWarning("Image::imshow: matrix is empty, can not show");
+			return MERROR::CMATRIX_EMPTY;
 		}
 		QRect deskRect = QApplication::desktop()->availableGeometry();
 
 		int w = deskRect.width();
 		int h = deskRect.height();
 
-		int ratio_h = (int)(this->m_data->m.cols / w) + 1;
-		int ratio_w = (int)(this->m_data->m.rows / h) + 1;
+		int ratio_h = (int)(cmatrix.cols / w) + 1;
+		int ratio_w = (int)(cmatrix.rows / h) + 1;
 
 		if (ratio_h > 1 || ratio_w > 1)
 		{
 			cv::namedWindow(windows_title.c_str(), 0);
 
-			cv::resizeWindow(windows_title.c_str(), (int)(this->m_data->m.cols / (ratio_w + 1))/2 , (int)(this->m_data->m.cols / (ratio_h + 1))/2);
+			cv::resizeWindow(windows_title.c_str(), (int)(cmatrix.cols / (ratio_w + 1)) / 2, (int)(cmatrix.cols / (ratio_h + 1)) / 2);
 		}
 
-
-		cv::imshow(windows_title.c_str(), this->m_data->m);
+		cv::imshow(windows_title.c_str(), cmatrix);
 		cv::waitKey(0);
 		return false;
 	}
-		
 
 	QImage* Image::toQImage()
 	{
@@ -126,31 +130,145 @@ namespace PhotoEdit {
 
 	void Image::finalize(void* image)
 	{
-		if(image != &this->m_data->m)
+		if(image != &this->m_data->m && image != nullptr)
 			delete image;
 	}
 
-
-	Image::CMatrix* Image::dilate(CMatrix& cm, int iterator_times, int OPTION)
+	int Image::save(Path& path)
 	{
-
-		return nullptr;
-	}
-	Image::CMatrix* Image::dilate(CMatrix& cm, int iterator_times, Coordinates& start_co, Coordinates& end_co, int OPTION)
-	{
-		return nullptr;
-	}
-
-
-	Image::CMatrix* Image::erode(CMatrix& cm, int iterator_times, int OPTION)
-	{
-		return nullptr;
-	}
-	Image::CMatrix* Image::erode(CMatrix& cm, int iterator_times, Coordinates& start_co, Coordinates& end_co, int OPTION)
-	{
-		return nullptr;
+		
+		String extension = path.extension().string();
+		if (extension == ".jpg" || extension == ".jepg" || extension == ".png" || extension == ".webp")
+		{
+			if (!cv::imwrite(path.string(), this->m_data->m))
+			{
+				qWarning("Image::save: cv::imwrite fail");
+				return MERROR::SAVE_FAILED;
+			}
+		}
+		else
+		{
+			qWarning("Image::save: error file extension");
+			return MERROR::FILE_EXTENISON_ILLEGALITY;
+		}
 	}
 
+
+	Image::CMatrix* Image::dilate(int& error_no, CMatrix& kernel, int iterator_times, int OPTION)
+	{
+		if (this->m_data->m.empty())
+		{
+			
+			return nullptr;
+		}
+		qDebug("%d, %d", Image::IMAGE_FLAG::DEFAULT, Image::IMAGE_FLAG::NEWOBJECT);
+		CMatrix* ret_m = nullptr;
+		switch (OPTION)
+		{
+		case IMAGE_FLAG::DEFAULT:
+		{
+			cv::dilate(this->m_data->m, this->m_data->m, kernel, cv::Point(-1, -1), iterator_times);
+			ret_m = &this->m_data->m;
+			break;
+		}
+		case IMAGE_FLAG::NEWOBJECT:
+		{
+			qDebug("new object");
+			ret_m = new CMatrix;
+			cv::dilate(this->m_data->m, *ret_m, kernel, cv::Point(-1, -1), iterator_times);
+			break;
+		}
+		default:
+			qWarning("Image::dilate: arg OPTION is undefined");
+			error_no = MERROR::ERROR_ARG;
+			return nullptr;
+		}
+		if (this->m_data->p_qimage != nullptr)
+		{
+			this->syncTotalQImage();
+		}
+		return ret_m;
+	}
+	Image::CMatrix* Image::dilate(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times,  int OPTION)
+	{
+		if (this != start_co.parent || this != end_co.parent)
+		{
+			qWarning("Image::dilate: Image is not compared");
+			error_no = MERROR::IMAGE_NO_COMPARE;
+			return nullptr;
+		}
+		int w = end_co.col - start_co.col;
+		int h = end_co.row - start_co.row;
+
+		CMatrix tmp_m;
+		tmp_m.create(h, w, CV_8UC3);
+
+		CMatrix partofm = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
+		cv::dilate(partofm, tmp_m, kernel, cv::Point(-1, -1), iterator_times);
+		tmp_m.copyTo(partofm);
+
+		if (this->m_data->p_qimage != nullptr)
+		{
+			this->syncTotalQImage();
+		}
+
+		CMatrix* ret_m = nullptr;
+		switch (OPTION)
+		{
+		case IMAGE_FLAG::DEFAULT:
+			tmp_m.copyTo(partofm);
+			ret_m = &this->m_data->m;
+			break;
+		case IMAGE_FLAG::NEWOBJECT:
+			ret_m = new CMatrix;
+			*ret_m = tmp_m;
+			break;
+		default:
+			qWarning("Image::dilate: arg OPTION is undefined");
+			error_no = MERROR::ERROR_ARG;
+			return nullptr;
+		}
+		if (this->m_data->p_qimage != nullptr)
+		{
+			this->syncTotalQImage();
+		}
+		return ret_m;
+
+	}
+
+
+	Image::CMatrix* Image::erode(int& error_no, CMatrix& cm, int iterator_times, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::erode(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::watershed(int& error_no, int value, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::watershed(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::thresold(int& error_no, int value, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::thresold(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::distanceTransform(int value, int OPTION)
+	{
+		return nullptr;
+	}
+	Image::CMatrix* Image::distanceTransform(int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
 
 	void Image::syncTotalQImage()
 	{

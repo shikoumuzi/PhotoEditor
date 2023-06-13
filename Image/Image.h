@@ -8,6 +8,9 @@
 #include<opencv2/highgui/highgui.hpp>   
 #include<boost/filesystem/path.hpp>
 #include<string>
+#include<future>
+#include"../Error/error.h"
+
 namespace PhotoEdit {
 	class Image
 	{
@@ -47,26 +50,33 @@ namespace PhotoEdit {
 		~Image();
 
 	public:// 读取函数
-		bool imread(Path& path);
-		bool imshow(String& windows_title);
+		int imread(Path& path);
+		int imshow(const String& windows_title);
+		static int imshow(const CMatrix& cmatrix, const String& windows_title);
+
 	public: // 转换函数
 		QImage* toQImage();
 		QPixmap* toQPixmap();
 		cv::Mat* toMat();
+
 	public: // 销毁函数
 		void finalize(void * image);
+
+	public: // 数据保存
+		int save(Path& path);
+
 	public:// 改变函数
-		CMatrix* dilate(CMatrix& cm, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT);
-		CMatrix* dilate(CMatrix& cm, int iterator_times = 10, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* dilate(int& error_no, CMatrix& kernel, int iterator_times = 3, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* dilate(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times = 10,  int OPTION = IMAGE_FLAG::DEFAULT);
 
-		CMatrix* erode(CMatrix& cm, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT);
-		CMatrix* erode(CMatrix& cm, int iterator_times = 10, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* erode(int& error_no, CMatrix& kernel, int iterator_times = 3, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* erode(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT);
 
-		CMatrix* watershed(int value, int OPTION = IMAGE_FLAG::DEFAULT);
-		CMatrix* watershed(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* watershed(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* watershed(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 
-		CMatrix* thresold(int value, int OPTION = IMAGE_FLAG::DEFAULT);
-		CMatrix* thresold(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* thresold(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* thresold(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 
 		CMatrix* distanceTransform(int value, int OPTION = IMAGE_FLAG::DEFAULT);
 		CMatrix* distanceTransform(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
@@ -81,6 +91,7 @@ namespace PhotoEdit {
 		void syncPartQImageInThread(Coordinates& start_co, Coordinates& end_co);
 		void syncTotalCMatrixInThread();
 		void syncPartCMatrixInThread(Coordinates& start_co, Coordinates& end_co);
+
 	public:// 转换接口
 		static void cv2eigenC3(CMatrix&, EMatrix&);
 		static void eigen2cvC3(EMatrix&, CMatrix&);
