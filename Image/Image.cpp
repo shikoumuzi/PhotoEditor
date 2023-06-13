@@ -14,6 +14,21 @@ namespace PhotoEdit {
 		QImage* p_qimage;
 	};
 
+
+	Image::Coordinates::Coordinates():parent(nullptr),row(-1),col(-1){}
+
+	Image::Coordinates::Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
+	Image::Coordinates::~Coordinates()
+	{
+		this->parent = nullptr;
+	}
+	void Image::Coordinates::operator=(Coordinates& that)
+	{
+		this->row = that.row;
+		this->col = that.col;
+		this->parent = that.parent
+	}
+
 	Image::Image():m_data(new struct ImageData)
 	{
 		this->m_data->p_qimage = nullptr;
@@ -111,8 +126,29 @@ namespace PhotoEdit {
 			delete image;
 	}
 
+	Image::CMatrix* Image::dilate(CMatrix& cm, int iterator_times, int OPTION)
+	{
 
-	void Image::synchronization()
+		return nullptr;
+	}
+
+	Image::CMatrix* Image::dilate(CMatrix& cm, int iterator_times, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image::CMatrix* Image::erode(CMatrix& cm, int iterator_times, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image::CMatrix* Image::erode(CMatrix& cm, int iterator_times, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+
+
+	void Image::syncTotalQImage()
 	{
 		if (this->m_data->p_qimage != nullptr)
 		{
@@ -132,6 +168,21 @@ namespace PhotoEdit {
 			}
 		}
 	}
+
+	void Image::syncPartQImage(Coordinates& start_co, Coordinates& end_co)
+	{
+	}
+
+	void Image::syncTotalCMatrix()
+	{
+	}
+
+	void Image::syncPartCMatrix(Coordinates& start_co, Coordinates& end_co)
+	{
+	}
+
+
+
 	void Image::cv2eigenC3(CMatrix& cm, EMatrix& em)
 	{
 		for (int i = 0; i < cm.rows; ++i)
@@ -156,7 +207,7 @@ namespace PhotoEdit {
 			}
 		}
 	}
-	void Image::eigen2qimage(EMatrix& em, QImage& qm)
+	void Image::eigen2qimageC3(EMatrix& em, QImage& qm)
 	{
 		QRgb* line = nullptr;
 		uchar r = 0, g = 0, b = 0;

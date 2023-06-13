@@ -15,11 +15,13 @@ namespace PhotoEdit {
 		class Coordinates
 		{
 		public:
-			Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
-			~Coordinates()
-			{
-				this->parent = nullptr;
-			}
+			static Coordinates null;
+		public:
+			Coordinates();
+			Coordinates(Image* parent, int row, int col);
+			~Coordinates();
+		public:
+			void operator=(Coordinates&);
 		public:
 			int row;
 			int col;
@@ -54,18 +56,31 @@ namespace PhotoEdit {
 	public: // 销毁函数
 		void finalize(void * image);
 	public:// 改变函数
-		CMatrix* dilate(CMatrix& cm, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT, int range_rows = -1, int range_cols = -1);
-		CMatrix* erode(CMatrix& cm, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT, int range_rows = -1, int range_cols = -1);
-		CMatrix* watershed(int value, int OPTION = IMAGE_FLAG::DEFAULT, int range_rows = -1, int range_cols = -1);
-		CMatrix* thresold(int value, int OPTION = IMAGE_FLAG::DEFAULT, int range_rows = -1, int range_cols = -1);
-		CMatrix* distanceTransform(int value, int OPTION = IMAGE_FLAG::DEFAULT, int range_rows = -1, int range_cols = -1);
+		CMatrix* dilate(CMatrix& cm, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* dilate(CMatrix& cm, int iterator_times = 10, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+
+		CMatrix* erode(CMatrix& cm, int iterator_times = 10, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* erode(CMatrix& cm, int iterator_times = 10, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+
+		CMatrix* watershed(int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* watershed(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+
+		CMatrix* thresold(int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* thresold(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+
+		CMatrix* distanceTransform(int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* distanceTransform(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 		
 	public:// 数据同步函数
-		void synchronization();
+		void syncTotalQImage();
+		void syncPartQImage(Coordinates& start_co, Coordinates& end_co);
+		void syncTotalCMatrix();
+		void syncPartCMatrix(Coordinates& start_co, Coordinates& end_co);
 
+	public:// 转换接口
 		static void cv2eigenC3(CMatrix&, EMatrix&);
 		static void eigen2cvC3(EMatrix&, CMatrix&);
-		static void eigen2qimage(EMatrix&, QImage&);
+		static void eigen2qimageC3(EMatrix&, QImage&);
 	private:
 		struct ImageData *m_data;
 	};
