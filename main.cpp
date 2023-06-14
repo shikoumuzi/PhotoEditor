@@ -18,25 +18,18 @@ int main(int argc, char *argv[])
     std::locale::global(std::locale(""));
     setlocale(LC_ALL, "Chinese-simplified");
     Image image;
-    image.imread(Image::Path("F:\\University\\作业与报告\\医学影像处理\\实验5\\noise.png"));
+    image.imread(Image::Path("C:\\Users\\矢口木子\\Desktop\\photo\\3E103F23326933BA9227FAFE1BEE0DB7.jpg"));
 
-    Mat* src = image.toMat();
-    image.imshow(String("nana"));
     int error_no = 0;
     cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
 
-    Image::CMatrix* d = image.dilate(error_no, element, 1, Image::IMAGE_FLAG::NEWOBJECT);
-    Image::imshow(*d, String("nana1"));
-    image.imshow("nana1_src");
 
+    //image.Rgb2Gray(error_no);
+    //image.imshow("Rgb2Gray");
 
-    image.dilate(error_no, element, 1);
-    image.imshow("nana2");
+    image.Rgb2Gray(error_no, Image::Coordinates(image, image.rows() / 2, 0), Image::Coordinates(image, image.rows(), image.cols()));
+    image.imshow("PartRgb2Gray");
 
-
-
-    image.finalize(d);
-    image.finalize(src);
     
     return a.exec();
 }

@@ -19,6 +19,7 @@ namespace PhotoEdit {
 
 	Image::Coordinates::Coordinates():parent(nullptr),row(-1),col(-1){}
 	Image::Coordinates::Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
+	Image::Coordinates::Coordinates(Image& parent, int row, int col):Coordinates(&parent, row, col){}
 	Image::Coordinates::~Coordinates()
 	{
 		this->parent = nullptr;
@@ -35,6 +36,12 @@ namespace PhotoEdit {
 	Image::Image():m_data(new struct ImageData)
 	{
 		this->m_data->p_qimage = nullptr;
+	}
+	Image::Image(CMatrix& cm): Image()
+	{
+		if (!cm.empty()) {
+			this->m_data->m = cm;
+		}
 	}
 	Image::~Image()
 	{
@@ -127,6 +134,21 @@ namespace PhotoEdit {
 		return &this->m_data->m;
 	}
 
+	bool Image::isempty()
+	{
+		return this->m_data->m.empty();
+	}
+
+	int Image::rows()
+	{
+		return this->m_data->m.rows;
+	}
+
+	int Image::cols()
+	{
+		return this->m_data->m.cols;
+	}
+
 
 	void Image::finalize(void* image)
 	{
@@ -153,8 +175,66 @@ namespace PhotoEdit {
 		}
 	}
 
+	int Image::copyTo(Image& image)
+	{
+		this->m_data->m.copyTo(image.m_data->m);
+		return 0;
+	}
 
-	Image::CMatrix* Image::dilate(int& error_no, CMatrix& kernel, int iterator_times, int OPTION)
+	Image* Image::Rgb2Gray(int& error_no, int OPTION)
+	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
+		if (this->m_data->m.type() == CV_8UC1)
+		{
+			error_no = MERROR::IMAGE_FORMAT_NOMATCH;
+			return nullptr;
+		}
+
+		CMatrix* ret_m = this->createObject(error_no, OPTION);
+
+		if (ret_m != nullptr)
+		{
+			cv::cvtColor(this->m_data->m, *ret_m, cv::COLOR_BGR2GRAY);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+
+		return this->returnResult(ret_m);
+	}
+	Image* Image::Rgb2Gray(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
+		if (this->m_data->m.type() == CV_8UC1)
+		{
+			error_no = MERROR::IMAGE_FORMAT_NOMATCH;
+			return nullptr;
+		}
+
+		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
+
+		if (ret_m.dst != nullptr)
+		{
+			cv::cvtColor(*ret_m.src, *ret_m.dst, cv::COLOR_BGR2GRAY);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+
+		return this->returnResult(ret_m);
+	}
+
+	Image* Image::dilate(int& error_no, CMatrix& kernel, int iterator_times, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -173,9 +253,9 @@ namespace PhotoEdit {
 			}
 		}
 
-		return ret_m;
+		return this->returnResult(ret_m);
 	}
-	Image::CMatrix* Image::dilate(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times,  int OPTION)
+	Image* Image::dilate(int& error_no, CMatrix& kernel, const Coordinates& start_co, const Coordinates& end_co, int iterator_times,  int OPTION)
 	{
 		if (this != start_co.parent || this != end_co.parent)
 		{
@@ -183,47 +263,25 @@ namespace PhotoEdit {
 			error_no = MERROR::IMAGE_NO_COMPARE;
 			return nullptr;
 		}
-		int w = end_co.col - start_co.col;
-		int h = end_co.row - start_co.row;
-
-		CMatrix tmp_m;
-		tmp_m.create(h, w, CV_8UC3);
-
-		CMatrix partofm = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
-		cv::dilate(partofm, tmp_m, kernel, cv::Point(-1, -1), iterator_times);
-		tmp_m.copyTo(partofm);
-
-		if (this->m_data->p_qimage != nullptr)
+		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
+		if (ret_m.dst != nullptr)
 		{
-			this->syncTotalQImage();
+			cv::dilate(*ret_m.src, *ret_m.dst, kernel, cv::Point(-1, -1), iterator_times);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
 		}
-
-		CMatrix* ret_m = nullptr;
-		switch (OPTION)
+		else
 		{
-		case IMAGE_FLAG::DEFAULT:
-			tmp_m.copyTo(partofm);
-			ret_m = &this->m_data->m;
-			break;
-		case IMAGE_FLAG::NEWOBJECT:
-			ret_m = new CMatrix;
-			*ret_m = tmp_m;
-			break;
-		default:
-			qWarning("Image::dilate: arg OPTION is undefined");
-			error_no = MERROR::ERROR_ARG;
+			error_no = MERROR::GET_IMAGE_BLOCK_FAILED;
 			return nullptr;
 		}
-		if (this->m_data->p_qimage != nullptr)
-		{
-			this->syncTotalQImage();
-		}
-		return ret_m;
+		return this->returnResult(ret_m);
 
 	}
 
-
-	Image::CMatrix* Image::erode(int& error_no, CMatrix& kernel, int iterator_times, int OPTION)
+	Image* Image::erode(int& error_no, CMatrix& kernel, int iterator_times, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -240,23 +298,44 @@ namespace PhotoEdit {
 				this->syncTotalQImage();
 			}
 		}
-		return ret_m;
+		return this->returnResult(ret_m);
 	}
-	Image::CMatrix* Image::erode(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times, int OPTION)
+	Image* Image::erode(int& error_no, CMatrix& kernel, const Coordinates& start_co, const Coordinates& end_co, int iterator_times, int OPTION)
+	{
+		if (this != start_co.parent || this != end_co.parent)
+		{
+			qWarning("Image::dilate: Image is not compared");
+			error_no = MERROR::IMAGE_NO_COMPARE;
+			return nullptr;
+		}
+		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
+		if (ret_m.dst != nullptr)
+		{
+			cv::erode(*ret_m.src, *ret_m.dst, kernel, cv::Point(-1, -1), iterator_times);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+		else
+		{
+			error_no = MERROR::GET_IMAGE_BLOCK_FAILED;
+			return nullptr;
+		}
+
+		return this->returnResult(ret_m);
+	}
+
+	Image* Image::watershed(int& error_no, int value, int OPTION)
+	{
+		return nullptr;
+	}
+	Image* Image::watershed(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
 		return nullptr;
 	}
 
-	Image::CMatrix* Image::watershed(int& error_no, int value, int OPTION)
-	{
-		return nullptr;
-	}
-	Image::CMatrix* Image::watershed(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
-	{
-		return nullptr;
-	}
-
-	Image::CMatrix* Image::thresold(int& error_no, int value, int OPTION)
+	Image* Image::thresold(int& error_no, int value, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -273,14 +352,35 @@ namespace PhotoEdit {
 				this->syncTotalQImage();
 			}
 		}
-		return ret_m;
+		return this->returnResult(ret_m);
 	}
-	Image::CMatrix* Image::thresold(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	Image* Image::thresold(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
-		return nullptr;
+		if (this != start_co.parent || this != end_co.parent)
+		{
+			qWarning("Image::dilate: Image is not compared");
+			error_no = MERROR::IMAGE_NO_COMPARE;
+			return nullptr;
+		}
+		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
+		if (ret_m.dst != nullptr && ret_m.src != nullptr)
+		{
+			cv::threshold(*ret_m.src, *ret_m.dst, value, 255, cv::THRESH_BINARY);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+		else
+		{
+			error_no = MERROR::GET_IMAGE_BLOCK_FAILED;
+			return nullptr;
+		}
+
+		return this->returnResult(ret_m);
 	}
 
-	Image::CMatrix* Image::distanceTransform(int& error_no, int value, int OPTION)
+	Image* Image::distanceTransform(int& error_no, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -288,21 +388,33 @@ namespace PhotoEdit {
 			return nullptr;
 		}
 
+		if (this->m_data->m.type() != CV_8UC1)
+		{
+			error_no = MERROR::IMAGE_FORMAT_NOMATCH;
+			return nullptr;
+		}
+
 		CMatrix* ret_m = this->createObject(error_no, OPTION);
 		if (ret_m != nullptr)
 		{
-			cv::distanceTransform(this->m_data->m, *ret_m, cv::DIST_L1, 5);
+			try {
+				cv::distanceTransform(this->m_data->m, *ret_m, cv::DIST_L2, 5);
+			}
+			catch (cv::Exception e) {
+				qDebug(e.what());
+			}
 			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
 			}
 		}
-		return ret_m;
+		return this->returnResult(ret_m);
 	}
-	Image::CMatrix* Image::distanceTransform(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
+	Image* Image::distanceTransform(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
 		return nullptr;
 	}
+
 
 	Image::CMatrix* Image::createObject(int& error_no, int OPTION)
 	{
@@ -326,9 +438,55 @@ namespace PhotoEdit {
 		}
 		return ret_m;
 	}
-	Image::CMatrix* Image::createPartObject(int& error_no, int OPTION)
+	Image::CMatrixPair Image::createPartObject(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
-		return nullptr;
+		int w = end_co.col - start_co.col;
+		int h = end_co.row - start_co.row;
+		CMatrix* ret_dst = new CMatrix;
+		switch (OPTION)
+		{
+		case IMAGE_FLAG::DEFAULT:
+		{
+			*ret_dst = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
+			return CMatrixPair({ ret_dst , ret_dst });
+		}
+		case IMAGE_FLAG::NEWOBJECT:
+		{
+			ret_dst->create(h, w, CV_8UC3);
+			CMatrix* ret_src = new CMatrix();
+			*ret_src = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
+			return CMatrixPair({ ret_src , ret_dst });
+		}
+		default:
+			qWarning("Image::dilate: arg OPTION is undefined");
+			error_no = MERROR::ERROR_ARG;
+			delete ret_dst;
+			return CMatrixPair({ nullptr, nullptr});
+		}
+	}
+
+	Image* Image::returnResult(CMatrix* cm)
+	{
+		Image* ret_img = new Image(*cm);
+		if (cm != &this->m_data->m) {
+			delete cm;
+		}
+		return ret_img;
+	}
+	Image* Image::returnResult(CMatrixPair& cm)
+	{
+		Image* ret_image = new Image(*cm.dst);
+		if (cm.src != &this->m_data->m && cm.src != nullptr && cm.dst)
+		{
+			delete cm.src;
+			cm.src = nullptr;
+		}
+		if (cm.dst != &this->m_data->m && cm.dst != nullptr)
+		{
+			//delete cm.dst;
+			//cm.dst = nullptr;
+		}
+		return ret_image;
 	}
 
 	void Image::syncTotalQImage()
@@ -352,7 +510,7 @@ namespace PhotoEdit {
 		}
 	}
 
-	void Image::syncPartQImage(Coordinates& start_co, Coordinates& end_co)
+	void Image::syncPartQImage(const Coordinates& start_co, const Coordinates& end_co)
 	{
 	}
 
@@ -360,7 +518,7 @@ namespace PhotoEdit {
 	{
 	}
 
-	void Image::syncPartCMatrix(Coordinates& start_co, Coordinates& end_co)
+	void Image::syncPartCMatrix(const Coordinates& start_co, const Coordinates& end_co)
 	{
 	}
 
@@ -368,7 +526,7 @@ namespace PhotoEdit {
 	{
 	}
 
-	void Image::syncPartQImageInThread(Coordinates& start_co, Coordinates& end_co)
+	void Image::syncPartQImageInThread(const Coordinates& start_co, const Coordinates& end_co)
 	{
 	}
 
@@ -376,7 +534,7 @@ namespace PhotoEdit {
 	{
 	}
 
-	void Image::syncPartCMatrixInThread(Coordinates& start_co, Coordinates& end_co)
+	void Image::syncPartCMatrixInThread(const Coordinates& start_co, const Coordinates& end_co)
 	{
 	}
 
