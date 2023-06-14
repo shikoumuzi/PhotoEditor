@@ -158,35 +158,21 @@ namespace PhotoEdit {
 	{
 		if (this->m_data->m.empty())
 		{
-			
+			error_no = MERROR::CMATRIX_EMPTY;
 			return nullptr;
 		}
-		qDebug("%d, %d", Image::IMAGE_FLAG::DEFAULT, Image::IMAGE_FLAG::NEWOBJECT);
-		CMatrix* ret_m = nullptr;
-		switch (OPTION)
+
+		CMatrix* ret_m = this->createObject(error_no, OPTION);
+
+		if (ret_m != nullptr)
 		{
-		case IMAGE_FLAG::DEFAULT:
-		{
-			cv::dilate(this->m_data->m, this->m_data->m, kernel, cv::Point(-1, -1), iterator_times);
-			ret_m = &this->m_data->m;
-			break;
-		}
-		case IMAGE_FLAG::NEWOBJECT:
-		{
-			qDebug("new object");
-			ret_m = new CMatrix;
 			cv::dilate(this->m_data->m, *ret_m, kernel, cv::Point(-1, -1), iterator_times);
-			break;
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
 		}
-		default:
-			qWarning("Image::dilate: arg OPTION is undefined");
-			error_no = MERROR::ERROR_ARG;
-			return nullptr;
-		}
-		if (this->m_data->p_qimage != nullptr)
-		{
-			this->syncTotalQImage();
-		}
+
 		return ret_m;
 	}
 	Image::CMatrix* Image::dilate(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times,  int OPTION)
@@ -237,14 +223,30 @@ namespace PhotoEdit {
 	}
 
 
-	Image::CMatrix* Image::erode(int& error_no, CMatrix& cm, int iterator_times, int OPTION)
+	Image::CMatrix* Image::erode(int& error_no, CMatrix& kernel, int iterator_times, int OPTION)
 	{
-		return nullptr;
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
+
+		CMatrix* ret_m = this->createObject(error_no, OPTION);
+		if (ret_m != nullptr)
+		{
+			cv::erode(this->m_data->m, *ret_m, kernel, cv::Point(-1, -1), iterator_times);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+		return ret_m;
 	}
 	Image::CMatrix* Image::erode(int& error_no, CMatrix& kernel, Coordinates& start_co, Coordinates& end_co, int iterator_times, int OPTION)
 	{
 		return nullptr;
 	}
+
 	Image::CMatrix* Image::watershed(int& error_no, int value, int OPTION)
 	{
 		return nullptr;
@@ -253,19 +255,78 @@ namespace PhotoEdit {
 	{
 		return nullptr;
 	}
+
 	Image::CMatrix* Image::thresold(int& error_no, int value, int OPTION)
 	{
-		return nullptr;
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
+
+		CMatrix* ret_m = this->createObject(error_no, OPTION);
+		if (ret_m != nullptr)
+		{
+			cv::threshold(this->m_data->m, *ret_m, value, 255, cv::THRESH_BINARY);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+		return ret_m;
 	}
 	Image::CMatrix* Image::thresold(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
 	{
 		return nullptr;
 	}
-	Image::CMatrix* Image::distanceTransform(int value, int OPTION)
+
+	Image::CMatrix* Image::distanceTransform(int& error_no, int value, int OPTION)
+	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
+
+		CMatrix* ret_m = this->createObject(error_no, OPTION);
+		if (ret_m != nullptr)
+		{
+			cv::distanceTransform(this->m_data->m, *ret_m, cv::DIST_L1, 5);
+			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			{
+				this->syncTotalQImage();
+			}
+		}
+		return ret_m;
+	}
+	Image::CMatrix* Image::distanceTransform(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
 	{
 		return nullptr;
 	}
-	Image::CMatrix* Image::distanceTransform(int value, Coordinates& start_co, Coordinates& end_co, int OPTION)
+
+	Image::CMatrix* Image::createObject(int& error_no, int OPTION)
+	{
+		CMatrix* ret_m = nullptr;
+		switch (OPTION)
+		{
+		case IMAGE_FLAG::DEFAULT:
+		{
+			ret_m = &this->m_data->m;
+			break;
+		}
+		case IMAGE_FLAG::NEWOBJECT:
+		{
+			ret_m = new CMatrix;
+			break;
+		}
+		default:
+			qWarning("Image::dilate: arg OPTION is undefined");
+			error_no = MERROR::ERROR_ARG;
+			return nullptr;
+		}
+		return ret_m;
+	}
+	Image::CMatrix* Image::createPartObject(int& error_no, int OPTION)
 	{
 		return nullptr;
 	}

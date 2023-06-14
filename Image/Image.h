@@ -78,9 +78,12 @@ namespace PhotoEdit {
 		CMatrix* thresold(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
 		CMatrix* thresold(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 
-		CMatrix* distanceTransform(int value, int OPTION = IMAGE_FLAG::DEFAULT);
-		CMatrix* distanceTransform(int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* distanceTransform(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		CMatrix* distanceTransform(int& error_no, int value, Coordinates& start_co, Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 		
+	private:
+		CMatrix* createObject(int& error_no, int OPTION);
+		CMatrix* createPartObject(int& error_no, int OPTION)
 	public:// 数据同步函数
 		void syncTotalQImage();
 		void syncPartQImage(Coordinates& start_co, Coordinates& end_co);
