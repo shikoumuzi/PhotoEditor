@@ -373,7 +373,7 @@ namespace PhotoEdit {
 		return nullptr;
 	}
 
-	Image* Image::thresold(int& error_no, int value, int OPTION)
+	Image* Image::thresold(int& error_no, int value, int max, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -384,7 +384,7 @@ namespace PhotoEdit {
 		CMatrix* ret_m = this->createObject(error_no, OPTION);
 		if (ret_m != nullptr)
 		{
-			cv::threshold(this->m_data->m, *ret_m, value, 255, cv::THRESH_BINARY);
+			cv::threshold(this->m_data->m, *ret_m, value, max, cv::THRESH_BINARY);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
@@ -392,7 +392,7 @@ namespace PhotoEdit {
 		}
 		return this->returnResult(ret_m);
 	}
-	Image* Image::thresold(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	Image* Image::thresold(int& error_no, int value,const Coordinates& start_co, const Coordinates& end_co, int max, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -408,7 +408,7 @@ namespace PhotoEdit {
 		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
 		if (ret_m.dst != nullptr && ret_m.src != nullptr)
 		{
-			cv::threshold(*ret_m.src, *ret_m.dst, value, 255, cv::THRESH_BINARY);
+			cv::threshold(*ret_m.src, *ret_m.dst, value, max, cv::THRESH_BINARY);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncPartQImage(start_co, end_co);
@@ -423,7 +423,7 @@ namespace PhotoEdit {
 		return this->returnResult(ret_m);
 	}
 
-	Image* Image::distanceTransform(int& error_no, int OPTION)
+	Image* Image::distanceTransform(int& error_no, int value, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -440,12 +440,10 @@ namespace PhotoEdit {
 		CMatrix* ret_m = this->createObject(error_no, OPTION);
 		if (ret_m != nullptr)
 		{
-			try {
-				cv::distanceTransform(this->m_data->m, *ret_m, cv::DIST_L2, 5);
-			}
-			catch (cv::Exception e) {
-				qDebug(e.what());
-			}
+			int type = ret_m->type();
+			cv::distanceTransform(this->m_data->m, *ret_m, cv::DIST_L1, 5);
+			ret_m->convertTo(*ret_m, type);
+			cv::threshold(*ret_m, *ret_m, value, 255, cv::THRESH_BINARY);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
@@ -453,7 +451,7 @@ namespace PhotoEdit {
 		}
 		return this->returnResult(ret_m);
 	}
-	Image* Image::distanceTransform(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	Image* Image::distanceTransform(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -551,7 +549,7 @@ namespace PhotoEdit {
 			}
 			else
 			{
-				qWarning("Image::syncPartQImage: image format is not matched");
+				qWarning("Image::syncTotalQImage: image format is not matched, type is %d", this->m_data->m.type());
 			}
 		}
 	}
@@ -615,7 +613,7 @@ namespace PhotoEdit {
 				break;
 			}
 			default:
-				qWarning("Image::syncPartQImage: image format is not matched");
+				qWarning("Image::syncPartQImage: image format is not matched, type is  %d", this->m_data->m.type());
 
 				break;
 			}
@@ -676,6 +674,7 @@ namespace PhotoEdit {
 	void Image::syncPartCMatrixInThread(const Coordinates& start_co, const Coordinates& end_co)
 	{
 	}
+
 
 
 	void Image::cv2eigenC3(CMatrix& cm, EMatrix& em)

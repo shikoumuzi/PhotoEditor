@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     image.erode(error_no, element);
     image.imShow("erode");
 
-    image.distanceTransform(error_no);
+    image.distanceTransform(error_no, 5);
     image.imShow("distanceTransform");
 
 

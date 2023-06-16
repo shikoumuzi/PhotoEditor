@@ -99,11 +99,11 @@ namespace PhotoEdit {
 		Image* watershed(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
 		Image* watershed(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 
-		Image* thresold(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* thresold(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* thresold(int& error_no, int value, int max = 255, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* thresold(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int max = 255, int OPTION = IMAGE_FLAG::DEFAULT);
 
-		Image* distanceTransform(int& error_no, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* distanceTransform(int& error_no,  const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* distanceTransform(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* distanceTransform(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 		
 	private:
 		CMatrix* createObject(int& error_no, int OPTION);
