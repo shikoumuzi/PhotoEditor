@@ -64,6 +64,7 @@ namespace PhotoEdit {
 			qWarning("Image::imread: read failed");
 			return MERROR::READ_FAILED;
 		}
+		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, QImage::Format_RGB888);
 		return 0;
 	}
 	int Image::imShow(const String& windows_title)
@@ -144,22 +145,24 @@ namespace PhotoEdit {
 			qWarning("Image::toQImage: matrix is empty, can not show");
 			return nullptr;
 		}
-		if (this->m_data->p_qimage == nullptr)
-		{
-			switch (this->m_data->m.type())
-			{
-			case CV_8UC3:
-				this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_RGB888);
-				break;
-			case CV_8UC1:
-				this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_Grayscale8);
-				break;
-			default:
-				qWarning("Image::toQImage: image format is no matched");
-				break;
-			}
-			return this->m_data->p_qimage;
-		}
+		// 因为qimage在初始化时 同cv::mat使用同一块内存缓冲区，所以当类型相同时，cv的算法会直接作用在qimage上
+		// 所以直接在imread初始化即可
+		//if (this->m_data->p_qimage == nullptr)
+		//{
+		//	switch (this->m_data->m.type())
+		//	{
+		//	case CV_8UC3:
+		//		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_RGB888);
+		//		break;
+		//	case CV_8UC1:
+		//		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_Grayscale8);
+		//		break;
+		//	default:
+		//		qWarning("Image::toQImage: image format is no matched");
+		//		break;
+		//	}
+		//	return this->m_data->p_qimage;
+		//}
 		return this->m_data->p_qimage;
 	}
 	QPixmap* Image::toQPixmap()
@@ -476,7 +479,7 @@ namespace PhotoEdit {
 			ret_m = new CMatrix;
 			break;
 		}
-		DEFAULTt:
+		default:
 			qWarning("Image::dilate: arg OPTION is undefined");
 			error_no = MERROR::ERROR_ARG;
 			return nullptr;
@@ -502,7 +505,7 @@ namespace PhotoEdit {
 			*ret_src = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
 			return CMatrixPair({ ret_src , ret_dst });
 		}
-		DEFAULTt:
+		default:
 			qWarning("Image::dilate: arg OPTION is undefined");
 			error_no = MERROR::ERROR_ARG;
 			delete ret_dst;
@@ -554,51 +557,62 @@ namespace PhotoEdit {
 	}
 	void Image::syncPartQImage(const Coordinates& start_co, const Coordinates& end_co)
 	{
-
 		if (this->m_data->p_qimage != nullptr)
 		{
 			switch (this->m_data->m.type())
 			{
 			case CV_8UC3:
 			{
+				// 因为qimage在初始化时 同cv::mat使用同一块内存缓冲区，所以当类型相同时，cv的算法会直接作用在qimage上
 				if (this->m_data->p_qimage->format() != QImage::Format_RGB888)
 				{
 					this->m_data->p_qimage->convertTo(QImage::Format_RGB888);
-				}
-				uchar* cv_line = nullptr;
-				for (int i = start_co.row; i < end_co.row; ++i)
-				{
-					for (int j = start_co.col; j < end_co.col; ++j)
+					uchar* cv_line = nullptr;
+					for (int i = start_co.row; i < end_co.row; ++i)
 					{
-						cv_line = this->m_data->m.ptr<uchar>(i, j);
-						this->m_data->p_qimage-> \
-							setPixel(j, i,
-								qRgb(cv_line[0], cv_line[1], cv_line[2]));
+						for (int j = start_co.col; j < end_co.col; ++j)
+						{
+							cv_line = this->m_data->m.ptr<uchar>(i, j);
+							this->m_data->p_qimage-> \
+								setPixel(j, i,
+									qRgb(cv_line[0], cv_line[1], cv_line[2]));
+						}
 					}
 				}
 				break;
 			}
 			case CV_8UC1:
 			{
+				// 因为qimage在初始化时 同cv::mat使用同一块内存缓冲区，所以当类型相同时，cv的算法会直接作用在qimage上
+				// 所以当类型相同时，不需要做改变
 				if (this->m_data->p_qimage->format() != QImage::Format_Grayscale8)
 				{
 					this->m_data->p_qimage->convertTo(QImage::Format_Grayscale8);
-				}
-				int black = 0, white = 0;
-				CMatrix& cimage = this->m_data->m;
-				uchar* point = nullptr;
-				for (int i = start_co.row; i < end_co.row; ++i)
-				{
-					for (int j = start_co.col; j < end_co.col; ++j)
-					{
-						point = cimage.ptr<uchar>(i, j);
-						this->m_data->p_qimage-> \
-							setPixel(j, i, qRgb(*point, *point, *point));
-					}
-				}
-				qDebug("black= %d, white= %d", black, white);
-				break;
+					int q_bytesline = this->m_data->p_qimage->bytesPerLine(); // 获取每一行长度
+					int cv_bytesline = this->m_data->m.step; // 获取每一行长度
+					uchar* q_data = (uchar*)this->m_data->p_qimage->constBits(); // 数据
+					uchar* cv_data = this->m_data->m.data;// 数据
+					int width = end_co.col - start_co.col;// 宽度
 
+					//qDebug("q_image_bits = %d, q_image_constbits = %d, cv_image = %d", this->m_data->p_qimage->bits(), this->m_data->p_qimage->constBits(), this->m_data->m.data);
+
+					for (int i = start_co.row - 1; i < end_co.row; ++i)
+					{
+						memcpy(&q_data[i * q_bytesline + start_co.col], &cv_data[i * cv_bytesline + start_co.col], width);
+					}
+					//uchar* point = nullptr;
+					//CMatrix& cimage = this->m_data->m;
+					//for (int i = start_co.row; i < end_co.row; ++i)
+					//{
+					//	for (int j = start_co.col; j < end_co.col; ++j)
+					//	{
+					//		point = cimage.ptr<uchar>(i, j);
+					//		this->m_data->p_qimage-> \
+					//			setPixel(j, i, qRgb(*point, *point, *point));
+					//	}
+					//}
+				}
+				break;
 			}
 			default:
 				qWarning("Image::syncPartQImage: image format is not matched");

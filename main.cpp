@@ -13,8 +13,7 @@ using namespace PhotoEdit;
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    //PhotoEdit::PhotoEditorMainWindow w;
-    //w.show();
+    PhotoEdit::PhotoEditorMainWindow w;
     std::locale::global(std::locale(""));
     setlocale(LC_ALL, "Chinese-simplified");
     Image image;
@@ -38,11 +37,27 @@ int main(int argc, char *argv[])
     image.Rgb2Gray(error_no);
     image.thresold(error_no, 125, Image::Coordinates(image, image.rows() / 3, image.cols()/3), Image::Coordinates(image, image.rows()/2, image.cols()/2));
     //image.thresold(error_no, 125);
-    image.imShow("nana");
+    image.imShow("thresold");
+
+    image.dilate(error_no, element);
+    image.imShow("erode");
+
+    image.erode(error_no, element);
+    image.imShow("erode");
+
+    image.distanceTransform(error_no);
+    image.imShow("distanceTransform");
+
 
     Image::imShowNoWait(*d, "qimage");
 
     Image:waitKey();
+
+    //w.setPixmap(*d);
+
+    //w.show();
+
+
 
     return a.exec();
 }

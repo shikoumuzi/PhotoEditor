@@ -2,6 +2,8 @@
 #define PHOTOEDITORMAINWINDOW_H
 
 #include <QMainWindow>
+#include<qpixmap.h>
+#include<qlabel.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PhotoEditorMainWindow; }
@@ -27,8 +29,14 @@ namespace PhotoEdit {
         void initWorkBrushDatils();
         // 初始化整体图片修改按键（右侧
 
+    public:
+        // 测试功能
+        QPixmap initQPixmap(QImage& image);
+        void setPixmap(QImage& image);
     private:
         Ui::PhotoEditorMainWindow* ui;
+        QLabel* imagelable;
+        QWidget* centerwindows;
     };
 }
 #endif // PHOTOEDITORMAINWINDOW_H
