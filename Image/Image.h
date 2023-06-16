@@ -59,9 +59,14 @@ namespace PhotoEdit {
 		~Image();
 
 	public:// 读取函数
-		int imread(Path& path);
-		int imshow(const String& windows_title);
-		static int imshow(const CMatrix& cmatrix, const String& windows_title);
+		int imRead(Path& path);
+		int imShow(const String& windows_title);
+		int imShowNoWait(const String& windows_title);
+		static int imShow(const QImage& image, const String& windows_title);
+		static int imShowNoWait(const QImage& image, const String& windows_title);
+		static int imShow(const CMatrix& cmatrix, const String& windows_title);
+		static int imShowNoWait(const CMatrix& cmatrix, const String& windows_title);
+		inline static void waitkey();
 
 	public: // 转换函数
 		QImage* toQImage();
@@ -84,7 +89,6 @@ namespace PhotoEdit {
 
 	public:// 改变函数
 		Image* Rgb2Gray(int& error_no, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* Rgb2Gray(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::NEWOBJECT);
 
 		Image* dilate(int& error_no, CMatrix& kernel, int iterator_times = 3, int OPTION = IMAGE_FLAG::DEFAULT);
 		Image* dilate(int& error_no, CMatrix& kernel, const Coordinates& start_co, const Coordinates& end_co, int iterator_times = 10,  int OPTION = IMAGE_FLAG::DEFAULT);

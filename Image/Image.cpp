@@ -56,7 +56,7 @@ namespace PhotoEdit {
 	}
 
 
-	int Image::imread(Path& path)
+	int Image::imRead(Path& path)
 	{
 		this->m_data->m = cv::Mat( cv::imread(path.string()));
 		if (this->m_data->m.empty())
@@ -66,17 +66,55 @@ namespace PhotoEdit {
 		}
 		return 0;
 	}
-	int Image::imshow(const String& windows_title)
+	int Image::imShow(const String& windows_title)
 	{
-		return Image::imshow(this->m_data->m, windows_title);
+		return Image::imShow(this->m_data->m, windows_title);
 	}
-	int Image::imshow(const Image::CMatrix& cmatrix, const Image::String& windows_title)
+	int Image::imShowNoWait(const String& windows_title)
+	{
+		return Image::imShowNoWait(this->m_data->m, windows_title);
+	}
+	int Image::imShow(const QImage& image, const String& windows_title)
+	{
+		int ret = Image::imShowNoWait(image, windows_title);
+		Image::waitkey();
+		return ret;
+	}
+	int Image::imShowNoWait(const QImage& image, const String& windows_title)
+	{
+		switch (image.format())
+		{
+		case QImage::Format_RGB888:
+			Image::imShow(Image::CMatrix(image.height(), image.width(), CV_8UC3, (void*)image.constBits(), image.bytesPerLine()), windows_title.c_str());
+			break;
+		case QImage::Format_Grayscale8:
+			Image::imShow(Image::CMatrix(image.height(), image.width(), CV_8UC1, (void*)image.constBits(), image.bytesPerLine()), windows_title.c_str());
+			break;
+		default:
+			qWarning("Image::imShowNoWait: image format is no matched");
+			return MERROR::IMAGE_FORMAT_NOMATCH;
+		}
+		return 0;
+	}
+	int Image::imShow(const Image::CMatrix& cmatrix, const Image::String& windows_title)
+	{
+		int ret = Image::imShowNoWait(cmatrix, windows_title);
+		Image::waitkey();
+		return ret;
+	}
+	int Image::imShowNoWait(const CMatrix& cmatrix, const String& windows_title)
 	{
 		if (cmatrix.empty())
 		{
-			qWarning("Image::imshow: matrix is empty, can not show");
+			qWarning("Image::imShowNoWait: matrix is empty, can not show");
 			return MERROR::CMATRIX_EMPTY;
 		}
+		if (windows_title.size() < 1)
+		{
+			qWarning("Image::imShowNoWait: windows title str length can not be less than 1");
+			return MERROR::WINDOWS_TITLE_IS_TOO_SHORT;
+		}
+
 		QRect deskRect = QApplication::desktop()->availableGeometry();
 
 		int w = deskRect.width();
@@ -88,24 +126,38 @@ namespace PhotoEdit {
 		if (ratio_h > 1 || ratio_w > 1)
 		{
 			cv::namedWindow(windows_title.c_str(), 0);
-
 			cv::resizeWindow(windows_title.c_str(), (int)(cmatrix.cols / (ratio_w + 1)) / 2, (int)(cmatrix.cols / (ratio_h + 1)) / 2);
 		}
 
 		cv::imshow(windows_title.c_str(), cmatrix);
+		return 0;
+	}
+	inline void Image::waitkey()
+	{
 		cv::waitKey(0);
-		return false;
 	}
 
 	QImage* Image::toQImage()
 	{
 		if (this->m_data->m.empty())
 		{
+			qWarning("Image::toQImage: matrix is empty, can not show");
 			return nullptr;
 		}
 		if (this->m_data->p_qimage == nullptr)
 		{
-			this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_RGB888);
+			switch (this->m_data->m.type())
+			{
+			case CV_8UC3:
+				this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_RGB888);
+				break;
+			case CV_8UC1:
+				this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_Grayscale8);
+				break;
+			default:
+				qWarning("Image::toQImage: image format is no matched");
+				break;
+			}
 			return this->m_data->p_qimage;
 		}
 		return this->m_data->p_qimage;
@@ -138,12 +190,10 @@ namespace PhotoEdit {
 	{
 		return this->m_data->m.empty();
 	}
-
 	int Image::rows()
 	{
 		return this->m_data->m.rows;
 	}
-
 	int Image::cols()
 	{
 		return this->m_data->m.cols;
@@ -181,6 +231,7 @@ namespace PhotoEdit {
 		return 0;
 	}
 
+
 	Image* Image::Rgb2Gray(int& error_no, int OPTION)
 	{
 		if (this->m_data->m.empty())
@@ -199,33 +250,7 @@ namespace PhotoEdit {
 		if (ret_m != nullptr)
 		{
 			cv::cvtColor(this->m_data->m, *ret_m, cv::COLOR_BGR2GRAY);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
-			{
-				this->syncTotalQImage();
-			}
-		}
-
-		return this->returnResult(ret_m);
-	}
-	Image* Image::Rgb2Gray(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
-	{
-		if (this->m_data->m.empty())
-		{
-			error_no = MERROR::CMATRIX_EMPTY;
-			return nullptr;
-		}
-		if (this->m_data->m.type() == CV_8UC1)
-		{
-			error_no = MERROR::IMAGE_FORMAT_NOMATCH;
-			return nullptr;
-		}
-
-		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
-
-		if (ret_m.dst != nullptr)
-		{
-			cv::cvtColor(*ret_m.src, *ret_m.dst, cv::COLOR_BGR2GRAY);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
 			}
@@ -247,7 +272,7 @@ namespace PhotoEdit {
 		if (ret_m != nullptr)
 		{
 			cv::dilate(this->m_data->m, *ret_m, kernel, cv::Point(-1, -1), iterator_times);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
 			}
@@ -257,6 +282,11 @@ namespace PhotoEdit {
 	}
 	Image* Image::dilate(int& error_no, CMatrix& kernel, const Coordinates& start_co, const Coordinates& end_co, int iterator_times,  int OPTION)
 	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
 		if (this != start_co.parent || this != end_co.parent)
 		{
 			qWarning("Image::dilate: Image is not compared");
@@ -267,9 +297,9 @@ namespace PhotoEdit {
 		if (ret_m.dst != nullptr)
 		{
 			cv::dilate(*ret_m.src, *ret_m.dst, kernel, cv::Point(-1, -1), iterator_times);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
-				this->syncTotalQImage();
+				this->syncPartQImage(start_co, end_co);
 			}
 		}
 		else
@@ -293,7 +323,7 @@ namespace PhotoEdit {
 		if (ret_m != nullptr)
 		{
 			cv::erode(this->m_data->m, *ret_m, kernel, cv::Point(-1, -1), iterator_times);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
 			}
@@ -302,6 +332,11 @@ namespace PhotoEdit {
 	}
 	Image* Image::erode(int& error_no, CMatrix& kernel, const Coordinates& start_co, const Coordinates& end_co, int iterator_times, int OPTION)
 	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
 		if (this != start_co.parent || this != end_co.parent)
 		{
 			qWarning("Image::dilate: Image is not compared");
@@ -312,9 +347,9 @@ namespace PhotoEdit {
 		if (ret_m.dst != nullptr)
 		{
 			cv::erode(*ret_m.src, *ret_m.dst, kernel, cv::Point(-1, -1), iterator_times);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
-				this->syncTotalQImage();
+				this->syncPartQImage(start_co, end_co);
 			}
 		}
 		else
@@ -347,7 +382,7 @@ namespace PhotoEdit {
 		if (ret_m != nullptr)
 		{
 			cv::threshold(this->m_data->m, *ret_m, value, 255, cv::THRESH_BINARY);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
 			}
@@ -356,6 +391,11 @@ namespace PhotoEdit {
 	}
 	Image* Image::thresold(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
 		if (this != start_co.parent || this != end_co.parent)
 		{
 			qWarning("Image::dilate: Image is not compared");
@@ -366,9 +406,9 @@ namespace PhotoEdit {
 		if (ret_m.dst != nullptr && ret_m.src != nullptr)
 		{
 			cv::threshold(*ret_m.src, *ret_m.dst, value, 255, cv::THRESH_BINARY);
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
-				this->syncTotalQImage();
+				this->syncPartQImage(start_co, end_co);
 			}
 		}
 		else
@@ -403,7 +443,7 @@ namespace PhotoEdit {
 			catch (cv::Exception e) {
 				qDebug(e.what());
 			}
-			if (this->m_data->p_qimage != nullptr && OPTION == IMAGE_FLAG::DEFAULT)
+			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
 			}
@@ -412,6 +452,11 @@ namespace PhotoEdit {
 	}
 	Image* Image::distanceTransform(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
+		if (this->m_data->m.empty())
+		{
+			error_no = MERROR::CMATRIX_EMPTY;
+			return nullptr;
+		}
 		return nullptr;
 	}
 
@@ -431,7 +476,7 @@ namespace PhotoEdit {
 			ret_m = new CMatrix;
 			break;
 		}
-		default:
+		DEFAULTt:
 			qWarning("Image::dilate: arg OPTION is undefined");
 			error_no = MERROR::ERROR_ARG;
 			return nullptr;
@@ -457,7 +502,7 @@ namespace PhotoEdit {
 			*ret_src = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
 			return CMatrixPair({ ret_src , ret_dst });
 		}
-		default:
+		DEFAULTt:
 			qWarning("Image::dilate: arg OPTION is undefined");
 			error_no = MERROR::ERROR_ARG;
 			delete ret_dst;
@@ -493,33 +538,113 @@ namespace PhotoEdit {
 	{
 		if (this->m_data->p_qimage != nullptr)
 		{
-			QRgb* line = nullptr;
-			for (int i = 0; i < this->m_data->m.rows; ++i)
+			if (this->m_data->m.type() == CV_8UC3)
 			{
-				line = (QRgb*)this->m_data->p_qimage->scanLine(i);
-				for (int j = 0; j < this->m_data->m.cols; ++j)
+				*this->m_data->p_qimage = QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_RGB888);
+			}
+			else if (this->m_data->m.type() == CV_8UC1)
+			{
+				*this->m_data->p_qimage = QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_Grayscale8);
+			}
+			else
+			{
+				qWarning("Image::syncPartQImage: image format is not matched");
+			}
+		}
+	}
+	void Image::syncPartQImage(const Coordinates& start_co, const Coordinates& end_co)
+	{
+
+		if (this->m_data->p_qimage != nullptr)
+		{
+			switch (this->m_data->m.type())
+			{
+			case CV_8UC3:
+			{
+				if (this->m_data->p_qimage->format() != QImage::Format_RGB888)
 				{
-					
-					this->m_data->p_qimage-> \
-						setPixel(j, i, 
-								qRgb(this->m_data->m.ptr<uchar>(i, j)[0],
-												this->m_data->m.ptr<uchar>(i, j)[1],
-												this->m_data->m.ptr<uchar>(i, j)[2]));
+					this->m_data->p_qimage->convertTo(QImage::Format_RGB888);
 				}
+				uchar* cv_line = nullptr;
+				for (int i = start_co.row; i < end_co.row; ++i)
+				{
+					for (int j = start_co.col; j < end_co.col; ++j)
+					{
+						cv_line = this->m_data->m.ptr<uchar>(i, j);
+						this->m_data->p_qimage-> \
+							setPixel(j, i,
+								qRgb(cv_line[0], cv_line[1], cv_line[2]));
+					}
+				}
+				break;
+			}
+			case CV_8UC1:
+			{
+				if (this->m_data->p_qimage->format() != QImage::Format_Grayscale8)
+				{
+					this->m_data->p_qimage->convertTo(QImage::Format_Grayscale8);
+				}
+				int black = 0, white = 0;
+				CMatrix& cimage = this->m_data->m;
+				uchar* point = nullptr;
+				for (int i = start_co.row; i < end_co.row; ++i)
+				{
+					for (int j = start_co.col; j < end_co.col; ++j)
+					{
+						point = cimage.ptr<uchar>(i, j);
+						this->m_data->p_qimage-> \
+							setPixel(j, i, qRgb(*point, *point, *point));
+					}
+				}
+				qDebug("black= %d, white= %d", black, white);
+				break;
+
+			}
+			default:
+				qWarning("Image::syncPartQImage: image format is not matched");
+
+				break;
 			}
 		}
 	}
 
-	void Image::syncPartQImage(const Coordinates& start_co, const Coordinates& end_co)
-	{
-	}
-
 	void Image::syncTotalCMatrix()
 	{
+		QImage* p_qimage = this->m_data->p_qimage;
+		if (p_qimage != nullptr)
+		{
+			switch (p_qimage->format())
+			{
+			case QImage::Format_RGB888:
+				this->m_data->m = CMatrix(p_qimage->height(), p_qimage->width(), CV_8UC3, (void*)p_qimage->constBits(), p_qimage->bytesPerLine());
+				break;
+			case QImage::Format_Grayscale8:
+				this->m_data->m = CMatrix(p_qimage->height(), p_qimage->width(), CV_8UC1, (void*)p_qimage->constBits(), p_qimage->bytesPerLine());
+				break;
+			default:
+				qWarning("Image::syncTotalCMatrix: image format is not matched");
+				break;
+			}
+		}
 	}
-
 	void Image::syncPartCMatrix(const Coordinates& start_co, const Coordinates& end_co)
 	{
+		QImage* p_qimage = this->m_data->p_qimage;
+		if (p_qimage != nullptr)
+		{
+			switch (p_qimage->format())
+			{
+			case QImage::Format_RGB888:
+				this->m_data->m = CMatrix(p_qimage->height(), p_qimage->width(), CV_8UC3, (void*)p_qimage->constBits(), p_qimage->bytesPerLine());
+				break;
+			case QImage::Format_Grayscale8:
+				this->m_data->m = CMatrix(p_qimage->height(), p_qimage->width(), CV_8UC1, (void*)p_qimage->constBits(), p_qimage->bytesPerLine());
+				break;
+			default:
+				qWarning("Image::syncTotalCMatrix: image format is not matched");
+				break;
+			}
+		}
 	}
 
 	void Image::syncTotalQImageInThread()

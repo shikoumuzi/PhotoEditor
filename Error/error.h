@@ -22,7 +22,10 @@ enum MERROR
 	ERROR_ARG,
 
 	// 图像取块bug
-	GET_IMAGE_BLOCK_FAILED
+	GET_IMAGE_BLOCK_FAILED,
+
+	// 窗口标题不能为空
+	WINDOWS_TITLE_IS_TOO_SHORT
 
 };
 
