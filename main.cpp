@@ -39,14 +39,14 @@ int main(int argc, char *argv[])
     //image.thresold(error_no, 125);
     image.imShow("thresold");
 
-    image.dilate(error_no, element);
-    image.imShow("erode");
+    //image.dilate(error_no, element);
+    //image.imShow("erode");
 
-    image.erode(error_no, element);
-    image.imShow("erode");
+    //image.erode(error_no, element);
+    //image.imShow("erode");
 
-    image.distanceTransform(error_no, 5);
-    image.imShow("distanceTransform");
+    //image.distanceTransform(error_no, 5);
+    //image.imShow("distanceTransform");
 
 
     Image::imShowNoWait(*d, "qimage");

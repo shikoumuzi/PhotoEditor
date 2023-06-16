@@ -442,8 +442,9 @@ namespace PhotoEdit {
 		{
 			int type = ret_m->type();
 			cv::distanceTransform(this->m_data->m, *ret_m, cv::DIST_L1, 5);
-			ret_m->convertTo(*ret_m, type);
 			cv::threshold(*ret_m, *ret_m, value, 255, cv::THRESH_BINARY);
+
+			ret_m->convertTo(*ret_m, type);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncTotalQImage();
@@ -458,8 +459,93 @@ namespace PhotoEdit {
 			error_no = MERROR::CMATRIX_EMPTY;
 			return nullptr;
 		}
+
 		return nullptr;
 	}
+
+
+
+	Image* Image::offset(int offsetvalue, int OPTION)
+	{
+		this->m_data->m += 1;
+		for (int i = 0; i < this->m_data->m.rows; ++i)
+		{
+			
+		}
+		return nullptr;
+	}
+
+	Image* Image::offset(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+
+		return nullptr;
+	}
+
+	Image& Image::operator+(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator+=(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator-(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator-=(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator*(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator*=(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator*(int)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator*=(int)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator/(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::operator/=(Image&)
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image* Image::T()
+	{
+		return nullptr;
+	}
+
+	Image& Image::rotateLeft()
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
+	Image& Image::rotateRight()
+	{
+		// TODO: 在此处插入 return 语句
+	}
+
 
 
 	Image::CMatrix* Image::createObject(int& error_no, int OPTION)
@@ -565,6 +651,9 @@ namespace PhotoEdit {
 				if (this->m_data->p_qimage->format() != QImage::Format_RGB888)
 				{
 					this->m_data->p_qimage->convertTo(QImage::Format_RGB888);
+				}
+				if (this->m_data->p_qimage->constBits() != this->m_data->m.data)
+				{
 					uchar* cv_line = nullptr;
 					for (int i = start_co.row; i < end_co.row; ++i)
 					{
@@ -576,6 +665,7 @@ namespace PhotoEdit {
 									qRgb(cv_line[0], cv_line[1], cv_line[2]));
 						}
 					}
+
 				}
 				break;
 			}
@@ -586,6 +676,9 @@ namespace PhotoEdit {
 				if (this->m_data->p_qimage->format() != QImage::Format_Grayscale8)
 				{
 					this->m_data->p_qimage->convertTo(QImage::Format_Grayscale8);
+				}
+				if (this->m_data->p_qimage->constBits() != this->m_data->m.data)
+				{
 					int q_bytesline = this->m_data->p_qimage->bytesPerLine(); // 获取每一行长度
 					int cv_bytesline = this->m_data->m.step; // 获取每一行长度
 					uchar* q_data = (uchar*)this->m_data->p_qimage->constBits(); // 数据
@@ -609,6 +702,7 @@ namespace PhotoEdit {
 					//			setPixel(j, i, qRgb(*point, *point, *point));
 					//	}
 					//}
+					
 				}
 				break;
 			}

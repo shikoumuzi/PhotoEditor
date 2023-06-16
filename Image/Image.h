@@ -104,7 +104,24 @@ namespace PhotoEdit {
 
 		Image* distanceTransform(int& error_no, int value, int OPTION = IMAGE_FLAG::DEFAULT);
 		Image* distanceTransform(int& error_no, int value, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		
+
+	public: // »ù±¾ÔËËã
+		Image* offset(int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offset(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+
+		Image& operator+(Image&);
+		Image& operator+=(Image&);
+		Image& operator-(Image&);
+		Image& operator-=(Image&);
+		Image& operator*(Image&);
+		Image& operator*=(Image&);
+		Image& operator*(int);
+		Image& operator*=(int);
+		Image& operator/(Image&);
+		Image& operator/=(Image&);
+		Image* T();
+		Image& rotateLeft();
+		Image& rotateRight();
 	private:
 		CMatrix* createObject(int& error_no, int OPTION);
 		CMatrixPair createPartObject(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION);
