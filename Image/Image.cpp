@@ -464,71 +464,82 @@ namespace PhotoEdit {
 	}
 
 
-
-	Image* Image::offset(int offsetvalue, int OPTION)
+	Image* Image::operator+(Image& image)
 	{
-		this->m_data->m += 1;
-		for (int i = 0; i < this->m_data->m.rows; ++i)
-		{
-			
-		}
+		return this->add(image, IMAGE_FLAG::NEWOBJECT);
+	}
+	Image* Image::operator+=(Image& image)
+	{
+		return this->add(image, IMAGE_FLAG::DEFAULT);
+	}
+	Image* Image::operator+(int offset)
+	{
+		return this->offsetAll(offset, IMAGE_FLAG::NEWOBJECT);;
+	}
+	Image* Image::operator+=(int offset)
+	{
+		return this->offsetAll(offset, IMAGE_FLAG::DEFAULT);
+	}
+	Image* Image::operator-(Image& cm)
+	{
+		return this->sub(cm, IMAGE_FLAG::NEWOBJECT);
+	}
+	Image* Image::operator-=(Image& cm)
+	{
+		return this->sub(cm, IMAGE_FLAG::DEFAULT);
+	}
+	Image* Image::operator-(int offset)
+	{
+		return this->offsetAll(0 - offset, IMAGE_FLAG::NEWOBJECT);
+	}
+	Image* Image::operator-=(int offset)
+	{
+		return this->offsetAll(0 - offset, IMAGE_FLAG::DEFAULT);
+	}
+	Image* Image::operator*(Image& cm)
+	{
+		return this->mut(cm, IMAGE_FLAG::NEWOBJECT);
+	}
+	Image* Image::operator*=(Image& cm)
+	{
+		return this->mut(cm, IMAGE_FLAG::DEFAULT);
+	}
+	Image* Image::operator*(int)
+	{
+		// TODO: 在此处插入 return 语句
+		return nullptr;
+	}
+	Image* Image::operator*=(int)
+	{
+		// TODO: 在此处插入 return 语句
+		return nullptr;
+	}
+	Image* Image::operator/(Image& cm)
+	{
+		return this->divide(cm, IMAGE_FLAG::NEWOBJECT);
+	}
+	Image* Image::operator/=(Image& cm)
+	{
+		return this->divide(cm, IMAGE_FLAG::DEFAULT);
+	}
+	Image* Image::add(Image&, int OPTION)
+	{
 		return nullptr;
 	}
 
-	Image* Image::offset(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	Image* Image::sub(Image&, int OPTION)
 	{
-
 		return nullptr;
 	}
 
-	Image& Image::operator+(Image&)
+	Image* Image::mut(Image&, int OPTION)
 	{
-		// TODO: 在此处插入 return 语句
+		return nullptr;
 	}
 
-	Image& Image::operator+=(Image&)
+	Image* Image::divide(Image&, int OPTION)
 	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator-(Image&)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator-=(Image&)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator*(Image&)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator*=(Image&)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator*(int)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator*=(int)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator/(Image&)
-	{
-		// TODO: 在此处插入 return 语句
-	}
-
-	Image& Image::operator/=(Image&)
-	{
-		// TODO: 在此处插入 return 语句
+		return nullptr;
 	}
 
 	Image* Image::T()
@@ -546,6 +557,55 @@ namespace PhotoEdit {
 		// TODO: 在此处插入 return 语句
 	}
 
+	Image* Image::offsetAll(int offsetvalue, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetAll(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetR(int offsetvalue, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetR(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetG(int offsetvalue, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetG(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetB(int offsetvalue, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetB(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetB(int RGB_BIT, int offsetvalue, int OPTION)
+	{
+		return nullptr;
+	}
+
+	Image* Image::offsetTwoOfRGB(int RGB_BIT, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	{
+		return nullptr;
+	}
 
 
 	Image::CMatrix* Image::createObject(int& error_no, int OPTION)
