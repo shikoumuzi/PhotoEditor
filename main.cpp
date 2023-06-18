@@ -34,11 +34,19 @@ int main(int argc, char *argv[])
         qDebug("nullptr");
     }
 
-    image.Rgb2Gray(error_no);
+    //image.Rgb2Gray(error_no);
     image.thresold(error_no, 125, Image::Coordinates(image, image.rows() / 3, image.cols()/3), Image::Coordinates(image, image.rows()/2, image.cols()/2));
     //image.thresold(error_no, 125);
     image.imShow("thresold");
 
+    image.offsetAll(error_no, -50);
+    image.imShow("offsetAll");
+
+    image.offsetR(error_no, 100);
+    image.imShow("offsetG");
+
+    image.offsetAll(error_no, 120, Image::Coordinates(image, image.rows() / 4, image.cols() / 3), Image::Coordinates(image, image.rows() / 3, image.cols() / 2));
+    image.imShow("offsetAll_part");
     //image.dilate(error_no, element);
     //image.imShow("erode");
 
@@ -47,15 +55,15 @@ int main(int argc, char *argv[])
 
     //image.distanceTransform(error_no, 5);
     //image.imShow("distanceTransform");
-
-
-    Image::imShowNoWait(*d, "qimage");
+    //w.setPixmap(*d);
+    //w.show();
+    Image::imShow(*d, "qimage");
 
     Image:waitKey();
 
-    //w.setPixmap(*d);
+    w.setPixmap(*d);
 
-    //w.show();
+
 
 
 

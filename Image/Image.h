@@ -51,6 +51,12 @@ namespace PhotoEdit {
 			NEWOBJECT,
 			
 		};
+		enum IMAGE_COLOR
+		{
+			BLUE = 0,
+			GREEN = 1,
+			RED = 2
+		};
 	public: 
 		struct ImageData;
 	public:
@@ -107,44 +113,32 @@ namespace PhotoEdit {
 
 	public: // »ù±¾ÔËËã
 
-		inline Image* operator+(Image&);
-		inline Image* operator+=(Image&);
-		Image* operator+(int);
-		Image* operator+=(int);
-		Image* operator-(Image&);
-		Image* operator-=(Image&);
-		Image* operator-(int);
-		Image* operator-=(int);
-		Image* operator*(Image&);
-		Image* operator*=(Image&);
-		Image* operator*(int);
-		Image* operator*=(int);
-		Image* operator/(Image&);
-		Image* operator/=(Image&);
-
-		Image* add(Image&, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* sub(Image&, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* mut(Image&, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* divide(Image&, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* add(int& error_no, Image&, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* sub(int& error_no, Image&, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* mut(int& error_no, Image&, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* divide(int& error_no, Image&, int OPTION = IMAGE_FLAG::DEFAULT);
 
 		Image* T();
 		Image& rotateLeft();
 		Image& rotateRight();
 
 	public:
-		Image* offsetAll(int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetAll(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetR(int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetR(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetG(int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetG(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetB(int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetB(int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetB(int RGB_BIT, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetTwoOfRGB(int RGB_BIT, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetAll(int& error_no, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetAll(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetR(int& error_no, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetR(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetG(int& error_no, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetG(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetB(int& error_no, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetB(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offset(int& error_no, int offsetvalue, int COLOR, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetTwoOfRGB(int& error_no, int RGB_BIT, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetTwoOfRGB(int& error_no, int RGB_BIT, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+
 	private:
 		CMatrix* createObject(int& error_no, int OPTION);
 		CMatrixPair createPartObject(int& error_no, const Coordinates& start_co, const Coordinates& end_co, int OPTION);
+		int checkCoordinates(const Coordinates& start_co, const Coordinates& end_co);
 		Image* returnResult(CMatrix* cm);
 		Image* Image::returnResult(CMatrixPair& cm);
 
