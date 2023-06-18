@@ -41,7 +41,8 @@ namespace PhotoEdit {
 		struct CMatrixPair
 		{
 			Image::CMatrix* src;
-			Image::CMatrix* dst;
+			Image::CMatrix* total_dst;
+			Image::CMatrix* part_dst;
 		};
 
 	public:
@@ -53,9 +54,9 @@ namespace PhotoEdit {
 		};
 		enum IMAGE_COLOR
 		{
-			BLUE = 0,
-			GREEN = 1,
-			RED = 2
+			BLUE = 1,
+			GREEN = 2,
+			RED = 4
 		};
 	public: 
 		struct ImageData;
@@ -131,9 +132,10 @@ namespace PhotoEdit {
 		Image* offsetG(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 		Image* offsetB(int& error_no, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
 		Image* offsetB(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offset(int& error_no, int offsetvalue, int COLOR, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetTwoOfRGB(int& error_no, int RGB_BIT, int offsetvalue, int OPTION = IMAGE_FLAG::DEFAULT);
-		Image* offsetTwoOfRGB(int& error_no, int RGB_BIT, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offset(int& error_no, int offsetvalue, int COLOR, const Coordinates& start_co, const Coordinates& end_co, bool is_part = false, int OPTION = IMAGE_FLAG::DEFAULT);
+
+		Image* offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, int OPTION = IMAGE_FLAG::DEFAULT);
+		Image* offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT);
 
 	private:
 		CMatrix* createObject(int& error_no, int OPTION);

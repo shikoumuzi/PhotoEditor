@@ -16,7 +16,6 @@ namespace PhotoEdit {
 		QImage* p_qimage;
 	};
 
-
 	Image::Coordinates::Coordinates():parent(nullptr),row(-1),col(-1){}
 	Image::Coordinates::Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
 	Image::Coordinates::Coordinates(Image& parent, int row, int col):Coordinates(&parent, row, col){}
@@ -296,9 +295,9 @@ namespace PhotoEdit {
 			return nullptr;
 		}
 		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
-		if (ret_m.dst != nullptr)
+		if (ret_m.part_dst != nullptr)
 		{
-			cv::dilate(*ret_m.src, *ret_m.dst, kernel, cv::Point(-1, -1), iterator_times);
+			cv::dilate(*ret_m.src, *ret_m.part_dst, kernel, cv::Point(-1, -1), iterator_times);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncPartQImage(start_co, end_co);
@@ -344,9 +343,9 @@ namespace PhotoEdit {
 			return nullptr;
 		}
 		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
-		if (ret_m.dst != nullptr)
+		if (ret_m.part_dst != nullptr)
 		{
-			cv::erode(*ret_m.src, *ret_m.dst, kernel, cv::Point(-1, -1), iterator_times);
+			cv::erode(*ret_m.src, *ret_m.part_dst, kernel, cv::Point(-1, -1), iterator_times);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncPartQImage(start_co, end_co);
@@ -401,9 +400,9 @@ namespace PhotoEdit {
 			return nullptr;
 		}
 		CMatrixPair ret_m = this->createPartObject(error_no, start_co, end_co, OPTION);
-		if (ret_m.dst != nullptr && ret_m.src != nullptr)
+		if (ret_m.part_dst != nullptr && ret_m.src != nullptr)
 		{
-			cv::threshold(*ret_m.src, *ret_m.dst, value, max, cv::THRESH_BINARY);
+			cv::threshold(*ret_m.src, *ret_m.part_dst, value, max, cv::THRESH_BINARY);
 			if (OPTION == IMAGE_FLAG::DEFAULT)
 			{
 				this->syncPartQImage(start_co, end_co);
@@ -552,14 +551,15 @@ namespace PhotoEdit {
 
 
 		CMatrixPair ret_m = createPartObject(error_no,start_co, end_co, OPTION);
-		int cv_bytesline = ret_m.dst->step; // 获取每一行长度
-		uchar* cv_data = ret_m.dst->data;// 数据
+		int cv_bytesline = ret_m.part_dst->step; // 获取每一行长度
+		uchar* cv_data = ret_m.part_dst->data;// 数据
 		int p_row = 0;
 		int point = 0;
+		int end = end_co.col * 3;
 		for (int i = start_co.row; i < end_co.row; ++i)
 		{
 			p_row = i * cv_bytesline;
-			for (int j = start_co.col; j < end_co.col; ++j)
+			for (int j = start_co.col * 3; j < end; ++j)
 			{
 				point = cv_data[p_row + j] + offsetvalue;
 				if (point < 0)
@@ -578,36 +578,33 @@ namespace PhotoEdit {
 		return this->offset(error_no, offsetvalue, IMAGE_COLOR::RED,
 			Coordinates(this, 0, 0), Coordinates(this, this->m_data->m.rows, this->m_data->m.step), OPTION);
 	}
-
 	Image* Image::offsetR(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
-		return this->offset(error_no, offsetvalue, IMAGE_COLOR::RED, Coordinates(this, start_co.row, start_co.col * 3), Coordinates(this, end_co.row, end_co.col * 3), OPTION);
+		return this->offset(error_no, offsetvalue, IMAGE_COLOR::RED, Coordinates(this, start_co.row, start_co.col * 3), Coordinates(this, end_co.row, end_co.col * 3), true, OPTION);
 	}
 
 	Image* Image::offsetG(int& error_no, int offsetvalue, int OPTION)
 	{
 		return this->offset(error_no, offsetvalue, IMAGE_COLOR::GREEN,
-			Coordinates(this, 0, 0), Coordinates(this, this->m_data->m.rows, this->m_data->m.step), OPTION);
+			Coordinates(this, 0, 0), Coordinates(this, this->m_data->m.rows, this->m_data->m.step));
 	}
-
 	Image* Image::offsetG(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
-		return this->offset(error_no, offsetvalue, IMAGE_COLOR::GREEN, Coordinates(this, start_co.row, start_co.col * 3), Coordinates(this, end_co.row, end_co.col * 3), OPTION);
+		return this->offset(error_no, offsetvalue, IMAGE_COLOR::GREEN, Coordinates(this, start_co.row, start_co.col * 3), Coordinates(this, end_co.row, end_co.col * 3), true, OPTION);
 	}
 
 	Image* Image::offsetB(int& error_no, int offsetvalue, int OPTION)
 	{
 		return this->offset(error_no, offsetvalue, IMAGE_COLOR::BLUE, 
-			Coordinates(this, 0, 0), Coordinates(this, this->m_data->m.rows, this->m_data->m.step), OPTION);
+			Coordinates(this, 0, 0), Coordinates(this, this->m_data->m.rows, this->m_data->m.step));
 	}
-
 	Image* Image::offsetB(int& error_no, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
-		return this->offset(error_no, offsetvalue, IMAGE_COLOR::BLUE, Coordinates(this, start_co.row, start_co.col * 3), Coordinates(this, end_co.row, end_co.col * 3), OPTION);
+		return this->offset(error_no, offsetvalue, IMAGE_COLOR::BLUE, Coordinates(this, start_co.row, start_co.col * 3), Coordinates(this, end_co.row, end_co.col * 3), true, OPTION);
 
 	}
 
-	Image* Image::offset(int& error_no, int offsetvalue, int COLOR, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	Image* Image::offset(int& error_no, int offsetvalue, int COLOR, const Coordinates& start_co, const Coordinates& end_co, bool is_part, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -620,7 +617,37 @@ namespace PhotoEdit {
 			{
 				return nullptr;
 			}
-			CMatrix* ret_m = createObject(error_no, OPTION);
+			if (COLOR == IMAGE_COLOR::BLUE)
+			{
+				COLOR = 0;
+			}
+			else if (COLOR == IMAGE_COLOR::GREEN)
+			{
+				COLOR = 1;
+			}
+			else if (COLOR == IMAGE_COLOR::RED)
+			{
+				COLOR = 2;
+			}
+			else
+			{
+				error_no = MERROR::ERROR_ARG;
+				qWarning("Image::offset: arg COLOR is error");
+				return nullptr;
+			}
+
+			CMatrix* ret_m = nullptr; 
+			CMatrixPair ret_mp;
+			if (!is_part)
+			{
+				ret_m = createObject(error_no, OPTION);
+			}
+			else
+			{
+				ret_mp = createPartObject(error_no, start_co, end_co, OPTION);
+				ret_m = ret_mp.part_dst;
+			}
+
 			int cv_bytesline = ret_m->step; // 获取每一行长度
 			uchar* cv_data = ret_m->data;// 数据
 			int p_row = 0;
@@ -640,7 +667,14 @@ namespace PhotoEdit {
 						cv_data[p_row + j + COLOR] = point;
 				}
 			}
-			return this->returnResult(ret_m);
+			if (!is_part)
+			{
+				return this->returnResult(ret_m);
+			}
+			else
+			{
+				return this->returnResult(ret_mp);
+			}
 		}
 		else
 		{
@@ -648,7 +682,7 @@ namespace PhotoEdit {
 		}
 	}
 
-	Image* Image::offsetTwoOfRGB(int& error_no, int RGB_BIT, int offsetvalue, int OPTION)
+	Image* Image::offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, int OPTION = IMAGE_FLAG::DEFAULT)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -656,21 +690,133 @@ namespace PhotoEdit {
 			return nullptr;
 		}
 
-		return nullptr;
+		if ((RGB_BIT & IMAGE_COLOR::RED) == 0)
+		{
+			offsetvalue_r = 0;
+		}
+		if ((RGB_BIT & IMAGE_COLOR::GREEN) == 0)
+		{
+			offsetvalue_g = 0;
+		}
+		if ((RGB_BIT & IMAGE_COLOR::BLUE) == 0)
+		{
+			offsetvalue_b = 0;
+		}
+
+		CMatrix* ret_m = createObject(error_no, OPTION);
+		int cv_bytesline = ret_m->step; // 获取每一行长度
+		uchar* cv_data = ret_m->data;// 数据
+		int p_row = 0;
+		int point_r = 0;
+		int point_g = 0;
+		int point_b = 0;
+
+		for (int i = 0; i < this->m_data->m.rows; ++i)
+		{
+			p_row = i * cv_bytesline;
+			for (int j = 0; j < cv_bytesline; j += 3)
+			{
+				if (offsetvalue_b != 0)
+				{
+					point_r = cv_data[p_row + j + 2] + offsetvalue_r;
+					if (point_r < 0)
+						cv_data[p_row + j + 2] = 0;
+					else if (point_r > 255)
+						cv_data[p_row + j + 2] = 255;
+					else
+						cv_data[p_row + j + 2] = point_r;
+				}
+				if (offsetvalue_g != 0)
+				{
+					point_g = cv_data[p_row + j + 1] + offsetvalue_g;
+					if (point_g < 0)
+						cv_data[p_row + j + 1] = 0;
+					else if (point_g > 255)
+						cv_data[p_row + j + 1] = 255;
+					else
+						cv_data[p_row + j + 1] = point_g;
+				}
+				if (offsetvalue_b != 0)
+				{
+					point_b = cv_data[p_row + j] + offsetvalue_b;
+					if (point_b < 0)
+						cv_data[p_row + j] = 0;
+					else if (point_b > 255)
+						cv_data[p_row + j] = 255;
+					else
+						cv_data[p_row + j] = point_b;
+				}
+			}
+		}
+		return this->returnResult(ret_m);
 	}
-
-	Image* Image::offsetTwoOfRGB(int& error_no, int RGB_BIT, int offsetvalue, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
+	Image* Image::offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT)
 	{
 		if (this->m_data->m.empty())
 		{
 			error_no = MERROR::CMATRIX_EMPTY;
 			return nullptr;
 		}
-		if ((error_no = this->checkCoordinates(start_co, end_co)) != 0)
+
+		if ((RGB_BIT & IMAGE_COLOR::RED) == 0)
 		{
-			return nullptr;
+			offsetvalue_r = 0;
 		}
-		return nullptr;
+		if ((RGB_BIT & IMAGE_COLOR::GREEN) == 0)
+		{
+			offsetvalue_g = 0;
+		}
+		if ((RGB_BIT & IMAGE_COLOR::BLUE) == 0)
+		{
+			offsetvalue_b = 0;
+		}
+
+		CMatrix* ret_m = createObject(error_no, OPTION);
+		int cv_bytesline = ret_m->step; // 获取每一行长度
+		uchar* cv_data = ret_m->data;// 数据
+		int p_row = 0;
+		int point_r = 0;
+		int point_g = 0;
+		int point_b = 0;
+
+		for (int i = 0; i < this->m_data->m.rows; ++i)
+		{
+			p_row = i * cv_bytesline;
+			for (int j = 0; j < cv_bytesline; j += 3)
+			{
+				if (offsetvalue_b != 0)
+				{
+					point_r = cv_data[p_row + j + 2] + offsetvalue_r;
+					if (point_r < 0)
+						cv_data[p_row + j + 2] = 0;
+					else if (point_r > 255)
+						cv_data[p_row + j + 2] = 255;
+					else
+						cv_data[p_row + j + 2] = point_r;
+				}
+				if (offsetvalue_g != 0)
+				{
+					point_g = cv_data[p_row + j + 1] + offsetvalue_g;
+					if (point_g < 0)
+						cv_data[p_row + j + 1] = 0;
+					else if (point_g > 255)
+						cv_data[p_row + j + 1] = 255;
+					else
+						cv_data[p_row + j + 1] = point_g;
+				}
+				if (offsetvalue_b != 0)
+				{
+					point_b = cv_data[p_row + j] + offsetvalue_b;
+					if (point_b < 0)
+						cv_data[p_row + j] = 0;
+					else if (point_b > 255)
+						cv_data[p_row + j] = 255;
+					else
+						cv_data[p_row + j] = point_b;
+				}
+			}
+		}
+		return this->returnResult(ret_m);
 	}
 
 
@@ -701,34 +847,31 @@ namespace PhotoEdit {
 	{
 		int w = end_co.col - start_co.col;
 		int h = end_co.row - start_co.row;
-		CMatrix* ret_dst = new CMatrix;
+		CMatrix* ret_part_dst = new CMatrix;
 		switch (OPTION)
 		{
 		case IMAGE_FLAG::DEFAULT:
 		{
-			try {
-				*ret_dst = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
-				return CMatrixPair({ ret_dst , ret_dst });
-			}
-			catch (cv::Exception e)
-			{
-				qWarning(e.what());
-			}
+			*ret_part_dst = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
+			return CMatrixPair({ &this->m_data->m , &this->m_data->m , ret_part_dst });
 			break;
 		}
 		case IMAGE_FLAG::NEWOBJECT:
 		{
-			ret_dst->create(h, w, CV_8UC3);
+			CMatrix* ret_total_dst = new CMatrix;
+			this->m_data->m.copyTo(*ret_total_dst);
+			*ret_part_dst = ret_total_dst->operator()(cv::Rect(start_co.col, start_co.row, w, h));
 			CMatrix* ret_src = new CMatrix();
 			*ret_src = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
-			return CMatrixPair({ ret_src , ret_dst });
+			return CMatrixPair({ ret_src , ret_total_dst, ret_part_dst });
 			break;
 		}
 		default:
 			qWarning("Image::dilate: arg OPTION is undefined");
 			error_no = MERROR::ERROR_ARG;
-			delete ret_dst;
-			return CMatrixPair({ nullptr, nullptr});
+			delete ret_part_dst;
+			ret_part_dst = nullptr;
+			return CMatrixPair({ nullptr, nullptr, nullptr});
 		}
 	}
 
@@ -757,27 +900,37 @@ namespace PhotoEdit {
 	}
 	Image* Image::returnResult(CMatrixPair& cm)
 	{
-		Image* ret_image = new Image(*cm.dst);
-		if (cm.src != cm.dst)
+		Image* ret_image = new Image(*cm.total_dst);
+		if (cm.src != cm.total_dst)
 		{
-			if (cm.src != &this->m_data->m && cm.src != nullptr && cm.dst)
+			if (cm.src != &this->m_data->m && cm.src != nullptr && cm.part_dst)
 			{
 				delete cm.src;
 				cm.src = nullptr;
 			}
-			if (cm.dst != &this->m_data->m && cm.dst != nullptr)
+			if (cm.total_dst != &this->m_data->m && cm.total_dst != nullptr)
 			{
-				delete cm.dst;
-				cm.dst = nullptr;
+				delete cm.total_dst;
+				cm.total_dst = nullptr;
+			}
+			if (cm.part_dst != &this->m_data->m && cm.part_dst != nullptr)
+			{
+				delete cm.part_dst;
+				cm.part_dst = nullptr;
 			}
 		}
 		else
 		{
-			if (cm.src != &this->m_data->m && cm.src != nullptr && cm.dst)
+			if (cm.src != &this->m_data->m && cm.src != nullptr && cm.part_dst)
 			{
 				delete cm.src;
 				cm.src = nullptr;
-				cm.dst = nullptr;
+				cm.total_dst = nullptr;
+			}
+			if (cm.part_dst != &this->m_data->m && cm.part_dst != nullptr)
+			{
+				delete cm.part_dst;
+				cm.part_dst = nullptr;
 			}
 		}
 		return ret_image;
