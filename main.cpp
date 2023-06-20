@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     }
 
     //image.Rgb2Gray(error_no);
-    image.thresold(error_no, 125, Image::Coordinates(image, image.rows() / 3, image.cols()/3), Image::Coordinates(image, image.rows()/2, image.cols()/2));
+    image.thresold(error_no, 125, Image::Coordinates(&image, image.rows() / 3, image.cols()/3), Image::Coordinates(&image, image.rows()/2, image.cols()/2));
     //image.thresold(error_no, 125);
     image.imShow("thresold");
 
@@ -43,6 +43,12 @@ int main(int argc, char *argv[])
     image.imShow("offsetAll");
 
     image.offsetR(error_no, 100);
+    image.imShow("offsetG");
+
+    image.offsetB(error_no, 100);
+    image.imShow("offsetG");
+
+    image.offsetG(error_no, 100);
     image.imShow("offsetG");
 
     image.offsetAll(error_no, 120, Image::Coordinates(image, image.rows() / 4, image.cols() / 3), Image::Coordinates(image, image.rows() / 3, image.cols() / 2));

@@ -682,7 +682,7 @@ namespace PhotoEdit {
 		}
 	}
 
-	Image* Image::offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, int OPTION = IMAGE_FLAG::DEFAULT)
+	Image* Image::offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, int OPTION )
 	{
 		if (this->m_data->m.empty())
 		{
@@ -750,7 +750,7 @@ namespace PhotoEdit {
 		}
 		return this->returnResult(ret_m);
 	}
-	Image* Image::offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, const Coordinates& start_co, const Coordinates& end_co, int OPTION = IMAGE_FLAG::DEFAULT)
+	Image* Image::offsetRGB(int& error_no, int RGB_BIT, int offsetvalue_r, int offsetvalue_g, int offsetvalue_b, const Coordinates& start_co, const Coordinates& end_co, int OPTION)
 	{
 		if (this->m_data->m.empty())
 		{
@@ -848,20 +848,25 @@ namespace PhotoEdit {
 		int w = end_co.col - start_co.col;
 		int h = end_co.row - start_co.row;
 		CMatrix* ret_part_dst = new CMatrix;
+		CMatrix* ret_src = new CMatrix();
+
 		switch (OPTION)
 		{
 		case IMAGE_FLAG::DEFAULT:
 		{
 			*ret_part_dst = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
-			return CMatrixPair({ &this->m_data->m , &this->m_data->m , ret_part_dst });
+			*ret_src = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h)); 
+			return CMatrixPair({ ret_src , &this->m_data->m , ret_part_dst });
 			break;
 		}
 		case IMAGE_FLAG::NEWOBJECT:
 		{
 			CMatrix* ret_total_dst = new CMatrix;
 			this->m_data->m.copyTo(*ret_total_dst);
+
 			*ret_part_dst = ret_total_dst->operator()(cv::Rect(start_co.col, start_co.row, w, h));
-			CMatrix* ret_src = new CMatrix();
+
+
 			*ret_src = this->m_data->m(cv::Rect(start_co.col, start_co.row, w, h));
 			return CMatrixPair({ ret_src , ret_total_dst, ret_part_dst });
 			break;
