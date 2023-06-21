@@ -16,14 +16,13 @@ namespace PhotoEdit {
 	private:
 		Operator();
 		Operator(const Operator&) = delete;
+	public:
 		Operator(Operator&&);
 	public:
 		~Operator();
 	public:// ²Ù×÷´æ´¢
-		String serialize();
-		void deseriallize(String&& file_content);
-		void deseriallize(String& file_content);
-		void save(const Path& path);
+		int writeFile();
+		int readFile();
 	private:
 		OperatorData* m_data;
 	};

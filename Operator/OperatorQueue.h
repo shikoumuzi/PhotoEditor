@@ -8,13 +8,16 @@ namespace PhotoEdit {
 	{
 	private:
 		friend class MemoryView;
-		class OperatorQueueData;
-
 	private:
 		class MemoryView
 		{
 		public:
 			struct MemoryViewData;
+		public:
+			MemoryView();
+
+			MemoryView(void* data);
+			~MemoryView();
 		public:// 获取当前操作视图
 			Operator& currentOperator();
 
@@ -27,20 +30,21 @@ namespace PhotoEdit {
 
 	public:
 		static OperatorQueue queue;
+		class OperatorQueueData;
 		OperatorQueue& getOperatorQueue()
 		{
 			return OperatorQueue::queue;
 		}
-
-	private:
-		OperatorQueue();
+	
 	public:
+		OperatorQueue();
+
 		~OperatorQueue();
 
 	public:// 进出队列
 		void push(Operator&& operation);// 压入操作
 		void pop();// 弹出队头
-		void clear(int pos, int num);//清理pos后所有栈
+		void clear(int pos);//清理pos后所有栈
 		void move(int offset);// 移动内存视窗
 
 	private:// 图像在内存和磁盘交互的操作
