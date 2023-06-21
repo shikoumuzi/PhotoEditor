@@ -32,6 +32,7 @@ namespace PhotoEdit {
 
     void PhotoEditorMainWindow::initWorkSpace()
     {
+
     }
 
     void PhotoEditorMainWindow::initWorkModeTranslation()

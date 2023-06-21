@@ -55,7 +55,7 @@ namespace PhotoEdit {
 	}
 
 
-	int Image::imRead(Path& path)
+	int Image::imRead(const Path& path)
 	{
 		this->m_data->m = cv::Mat( cv::imread(path.string()));
 		if (this->m_data->m.empty())

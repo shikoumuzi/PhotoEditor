@@ -3,7 +3,23 @@
 
 namespace PhotoEdit {
 
+	class PhotoEdit
+	{
+	public:
+		PhotoEdit();
+		~PhotoEdit();
 
+	private:
+
+	};
+
+	PhotoEdit::PhotoEdit()
+	{
+	}
+
+	PhotoEdit::~PhotoEdit()
+	{
+	}
 
 
 }

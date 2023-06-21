@@ -66,7 +66,7 @@ namespace PhotoEdit {
 		~Image();
 
 	public:// ¶ÁÈ¡º¯Êý
-		int imRead(Path& path);
+		int imRead(const Path& path);
 		int imShow(const String& windows_title);
 		int imShowNoWait(const String& windows_title);
 		static int imShow(const QImage& image, const String& windows_title);
