@@ -13,10 +13,9 @@ namespace PhotoEdit {
 		using Path = boost::filesystem::path;
 	private:
 		class OperatorData;
-	private:
-		Operator();
-		Operator(const Operator&) = delete;
 	public:
+		Operator();
+		Operator(const Operator&);
 		Operator(Operator&&);
 	public:
 		~Operator();

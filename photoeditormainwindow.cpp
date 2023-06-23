@@ -4,24 +4,26 @@
 #include<qlabel.h>
 #include<qlayout.h>
 #include<atlalloc.h>
+#include<qdesktopwidget.h>
+
 namespace PhotoEdit {
 
     PhotoEditorMainWindow::PhotoEditorMainWindow(QWidget* parent)
-        : QMainWindow(parent)
+        : QMainWindow(parent),
+        m_workspace(new WorkSpace)
         , ui(new Ui::PhotoEditorMainWindow)
     {
         ui->setupUi(this);
 
-        this->centerwindows = new QWidget();
+        // ÉèÖÃ´°¿ÚÎ»ÖÃ
+        auto qr = this->frameGeometry();
+        auto desktop = QDesktopWidget();
+        auto cp = desktop.availableGeometry().center();
+        qr.moveCenter(cp);
 
-        QHBoxLayout hlayout;
-        this->imagelable = new QLabel();
-        hlayout.addWidget(this->imagelable);
-       
 
 
-        this->centerwindows->setLayout(&hlayout);
-        this->setCentralWidget(this->centerwindows);
+        this->setCentralWidget(m_workspace);
     }
 
 
@@ -45,6 +47,14 @@ namespace PhotoEdit {
 
     void PhotoEditorMainWindow::initWorkBrushDatils()
     {
+    }
+
+    void PhotoEditorMainWindow::resizeEvent(QResizeEvent* event)
+    {
+        qDebug("old = %d, %d; new = %d, %d", event->oldSize().height(), event->oldSize().width(), event->size().height(), event->size().width());
+        this->m_workspace->resizeEvent(event);
+        this->repaint();
+
     }
 
     QPixmap PhotoEditorMainWindow::initQPixmap(QImage& image)

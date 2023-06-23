@@ -5,12 +5,11 @@
 #include<qbrush.h>
 #include<qimage.h>
 #include<qwidget.h>
-#include"../PhotoEditor/PhotoEditor.h"
 #include<boost/filesystem.hpp>
-
-
+#include<qapplication.h>
 namespace PhotoEdit {
 
+#define __WORKSPACE_FUNCTION_NUM__ 4
 	class WorkSpace:public QWidget
 	{
 	public:
@@ -18,17 +17,23 @@ namespace PhotoEdit {
 	public:
 		struct WorkSpaceData;
 	public:
-		WorkSpace(PhotoEdit* parent);
-
+		WorkSpace();
+		~WorkSpace();
 	public: //界面初始化
-		void initPainter();
-		void initControlBoard();
+		void initPainter(int minwsize, int minhsize);
+		void initControlBoard(int minwsize, int minhsize);
 		void initControlFrame();
 	
 	public:
 		void replaceControlBoard();
 		void addControlBoard();
 		void deleteControlBoard();
+
+	public:
+		void resizeEvent(QResizeEvent* event);
+
+
+
 	public:
 		void readImage();
 	private:

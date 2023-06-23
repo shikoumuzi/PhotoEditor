@@ -7,13 +7,16 @@ namespace PhotoEdit {
 	{
 	public:
 		friend class WorkSpace;
+		struct PainterWidgetData;
+		using PaintSignal = void(*)(void*);
 	public:
-		PainterWidget(WorkSpace *parent):painter(this)
-		{
+		PainterWidget(WorkSpace* parent, int minwsize, int minhsize);
+		void begin(QPaintDevice* image);
+		void binding(PaintSignal callback, void* data);
+		void paintEvent(QPaintEvent* event);
 
-		}
 	public:
-		QPainter painter;
+		PainterWidgetData* m_data;
 	};
 }
 

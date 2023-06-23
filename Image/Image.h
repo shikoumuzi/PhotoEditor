@@ -10,7 +10,7 @@
 #include<string>
 #include<future>
 #include"../Error/error.h"
-
+#include"../Coordinates/Coordinates.h"
 namespace PhotoEdit {
 	class Image
 	{
@@ -22,29 +22,12 @@ namespace PhotoEdit {
 		using String = std::string;
 		using PImage = Image*;
 	public:
-		class Coordinates
-		{
-		public:
-			static Coordinates null;
-		public:
-			Coordinates();
-			Coordinates(Image* parent, int row, int col);
-			Coordinates(Image& parent, int row, int col);
-			~Coordinates();
-		public:
-			void operator=(Coordinates&);
-		public:
-			int row;
-			int col;
-			Image* parent;
-		};
 		struct CMatrixPair
 		{
 			Image::CMatrix* src;
 			Image::CMatrix* total_dst;
 			Image::CMatrix* part_dst;
 		};
-
 	public:
 		enum IMAGE_FLAG
 		{

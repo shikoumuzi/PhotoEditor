@@ -16,20 +16,7 @@ namespace PhotoEdit {
 		QImage* p_qimage;
 	};
 
-	Image::Coordinates::Coordinates():parent(nullptr),row(-1),col(-1){}
-	Image::Coordinates::Coordinates(Image* parent, int row, int col):parent(parent), row(row), col(col){}
-	Image::Coordinates::Coordinates(Image& parent, int row, int col):Coordinates(&parent, row, col){}
-	Image::Coordinates::~Coordinates()
-	{
-		this->parent = nullptr;
-	}
 
-	void Image::Coordinates::operator=(Coordinates& that)
-	{
-		this->row = that.row;
-		this->col = that.col;
-		this->parent = that.parent;
-	}
 
 
 	Image::Image():m_data(new struct ImageData)

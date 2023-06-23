@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include<qpixmap.h>
 #include<qlabel.h>
+#include"WorkSpace/workspace.h"
+#include<qevent.h>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PhotoEditorMainWindow; }
@@ -29,6 +32,9 @@ namespace PhotoEdit {
         void initWorkBrushDatils();
         // 初始化整体图片修改按键（右侧
 
+    public:// 事件
+        void resizeEvent(QResizeEvent* resizeEvent);
+
     public:
         // 测试功能
         QPixmap initQPixmap(QImage& image);
@@ -37,6 +43,7 @@ namespace PhotoEdit {
         Ui::PhotoEditorMainWindow* ui;
         QLabel* imagelable;
         QWidget* centerwindows;
+        WorkSpace* m_workspace;
     };
 }
 #endif // PHOTOEDITORMAINWINDOW_H

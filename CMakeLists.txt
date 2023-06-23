@@ -95,10 +95,21 @@ else()
              ${PROJECT_SOURCES}
              "WorkSpace/workspace.h" 
              "WorkSpace/workspace.cpp" 
-             "PhotoEditor/PhotoEditor.h" 
-             "PhotoEditor/PhotoEditor.cpp" 
              "Image/Image.h" 
-             "Image/Image.cpp" "Operator/Operator.h" "Thread/ThreadFactory.h" "Operator/OperatorFactory.h" "Error/error.h" "Operator/Operator.cpp" "Operator/OperatorQueue.h" "Operator/OperatorQueue.cpp" "Widget/PainterWidget.h")
+             "Image/Image.cpp" 
+             "Operator/Operator.h" 
+             "Thread/ThreadFactory.h" 
+             "Operator/OperatorFactory.h" 
+             "Error/error.h" 
+             "Operator/Operator.cpp" 
+             "Operator/OperatorQueue.h" 
+             "Operator/OperatorQueue.cpp" 
+             "Widget/PainterWidget.h" 
+             "Widget/PainterWidget.cpp" 
+             "Coordinates/Coordinates.h" 
+             "Coordinates/Coordinates.cpp" 
+             "Widget/ControlBaseBox.h"
+             "Widget/ControlBaseBox.cpp")
     endif()
 endif()
 
