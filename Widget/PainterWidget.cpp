@@ -8,6 +8,7 @@ namespace PhotoEdit
 		WorkSpace* parent;
 		QPainter painter;
 		PaintSignal callback;
+		QPaintDevice* image;
 		void* data;
 	};
 
@@ -17,7 +18,7 @@ namespace PhotoEdit
 		this->m_data->callback = nullptr;
 		this->m_data->data = nullptr;
 		this->m_data->parent = parent;
-
+		this->m_data->image = nullptr;
 		// ÉèÖÃ´óÐ¡
 		this->setMinimumSize(minwsize, minhsize);
 		this->setFixedSize(minwsize, minhsize);
@@ -36,7 +37,8 @@ namespace PhotoEdit
 	}
 	void PainterWidget::begin(QPaintDevice* image)
 	{
-		this->m_data->painter.begin(image);
+		this->m_data->image = image;
+		this->repaint();
 	}
 	void PainterWidget::binding(PaintSignal callback, void* data)
 	{
@@ -45,7 +47,17 @@ namespace PhotoEdit
 	}
 	void PainterWidget::paintEvent(QPaintEvent* event)
 	{
-
+		if (this->m_data->image != nullptr)
+		{
+			this->m_data->painter.begin(this->m_data->image);
+			this->m_data->painter.end();
+			this->m_data->painter.begin(this);
+			this->m_data->painter.drawImage(0, 0, *(QImage*)this->m_data->image);
+		}
+		else
+		{
+			qDebug("PainterWidget::paintEvent: image is nullptr");
+		}
 
 	}
 }

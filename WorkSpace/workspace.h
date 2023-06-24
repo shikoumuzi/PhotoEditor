@@ -33,14 +33,17 @@ namespace PhotoEdit {
 		void addControlBoard();
 		void deleteControlBoard();
 
+	public:
+		bool isPathExit();
 
 	public:// ÊÂ¼þº¯Êý
 		void resizeEvent(QResizeEvent* event);
 
-
-
 	public:
 		void readImage();
+		void loadImage();
+		void paintImage();
+
 	private:
 		WorkSpaceData* m_data;
 	};

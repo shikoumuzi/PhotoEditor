@@ -13,8 +13,7 @@ namespace PhotoEdit {
 		PainterWidget(WorkSpace* parent, int minwsize, int minhsize);
 		void begin(QPaintDevice* image);
 		void binding(PaintSignal callback, void* data);
-		void paintEvent(QPaintEvent* event);
-
+		void paintEvent(QPaintEvent* event) override;
 	public:
 		PainterWidgetData* m_data;
 	};

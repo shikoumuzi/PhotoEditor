@@ -63,13 +63,20 @@ namespace PhotoEdit {
     {
         this->imagelable->setPixmap(initQPixmap(image).scaled(600, 300));
     }
-    using ReadFun = void(WorkSpace::*)(WorkSpace*);
+
     void PhotoEditorMainWindow::readImage()
     {
         qDebug("PhotoEditorMainWindow::readImage");
-        auto pool = QThreadPool::globalInstance();
-        ReadFun fun = this->m_workspace->readImage;
+        this->m_workspace->readImage();
 
+        auto pool = QThreadPool::globalInstance();
+        ReadRunable* read_thread = new ReadRunable(this->m_workspace);
+        read_thread->setAutoDelete(true);
+
+        pool->start(read_thread);
+
+        pool->waitForDone();
+        this->m_workspace->paintImage();
 
 
         //auto read_thread = new ReadRunable(this->m_workspace->readImage, this->m_workspace)

@@ -11,6 +11,7 @@
 #include<future>
 #include"../Error/error.h"
 #include"../Coordinates/Coordinates.h"
+#include<vector>
 namespace PhotoEdit {
 	class Image
 	{
@@ -21,6 +22,7 @@ namespace PhotoEdit {
 		using CMatrix = cv::Mat;
 		using String = std::string;
 		using PImage = Image*;
+		using ByteVector = std::vector<char>;
 	public:
 		struct CMatrixPair
 		{
@@ -50,6 +52,8 @@ namespace PhotoEdit {
 
 	public:// ¶ÁÈ¡º¯Êý
 		int imRead(const Path& path);
+		int imRead(const String& path, int);
+		int imRead(const ByteVector& bytes);
 		int imShow(const String& windows_title);
 		int imShowNoWait(const String& windows_title);
 		static int imShow(const QImage& image, const String& windows_title);

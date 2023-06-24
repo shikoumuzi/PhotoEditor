@@ -19,6 +19,8 @@ namespace PhotoEdit {
 
 
 
+
+
 	Image::Image():m_data(new struct ImageData)
 	{
 		this->m_data->p_qimage = nullptr;
@@ -53,13 +55,49 @@ namespace PhotoEdit {
 			qWarning("Image::imread: read failed");
 			return MERROR::READ_FAILED;
 		}
-		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_RGB888);
+		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_BGR888);
+		return 0;
+	}
+
+	int Image::imRead(const String& path, int)
+	{
+		qDebug(path.c_str());
+
+		this->m_data->m = cv::Mat(cv::imread(path));
+
+		if (this->m_data->m.empty())
+		{
+			qWarning("Image::imread: read failed");
+			return MERROR::READ_FAILED;
+		}
+		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_BGR888);
+		return 0;
+	}
+	int Image::imRead(const ByteVector& bytes)
+	{
+		try
+		{
+			this->m_data->m = cv::Mat(cv::imdecode(bytes, true));
+
+		}
+		catch (cv::Exception e)
+		{
+			qDebug(e.what());
+		}
+
+		if (this->m_data->m.empty())
+		{
+			qWarning("Image::imread: read failed");
+			return MERROR::READ_FAILED;
+		}
+		this->m_data->p_qimage = new QImage(static_cast<const unsigned char*>(this->m_data->m.data), this->m_data->m.cols, this->m_data->m.rows, this->m_data->m.step, QImage::Format_BGR888);
 		return 0;
 	}
 	int Image::imShow(const String& windows_title)
 	{
 		return Image::imShow(this->m_data->m, windows_title);
 	}
+
 	int Image::imShowNoWait(const String& windows_title)
 	{
 		return Image::imShowNoWait(this->m_data->m, windows_title);

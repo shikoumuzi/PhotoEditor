@@ -9,16 +9,14 @@ namespace PhotoEdit
 	class ReadRunable : public QRunnable
 	{
 	public:
-		using ReadFun = void(*)(WorkSpace*);
-	public:
-		ReadRunable(ReadFun fun, WorkSpace* parent) :fun(fun), parent(parent) {}
+		ReadRunable(WorkSpace* parent):parent(parent) {}
 
 		void run() override
 		{
-			this->fun(parent);
+			if(parent->isPathExit())
+				this->parent->loadImage();
 		}
 	private:
-		ReadFun fun;
 		WorkSpace* parent;
 
 	};
