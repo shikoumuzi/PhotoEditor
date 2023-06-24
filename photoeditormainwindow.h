@@ -6,7 +6,7 @@
 #include<qlabel.h>
 #include"WorkSpace/workspace.h"
 #include<qevent.h>
-
+#include"ToolBar/ToolBar.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PhotoEditorMainWindow; }
@@ -16,7 +16,8 @@ namespace PhotoEdit {
     class PhotoEditorMainWindow : public QMainWindow
     {
         Q_OBJECT
-
+    public:
+        friend class ToolBar;
     public:
         PhotoEditorMainWindow(QWidget* parent = nullptr);
         ~PhotoEditorMainWindow();
@@ -25,12 +26,7 @@ namespace PhotoEdit {
         // 主工作区（中间
         void initWorkSpace();
         // 初始化工作模式切换组件
-        void initWorkModeTranslation();
-        // 初始化笔刷工具栏（左侧
-        void initWorkBrushBar();
-        // 初始化笔刷详情设置（右侧
-        void initWorkBrushDatils();
-        // 初始化整体图片修改按键（右侧
+        void initToolBar();
 
     public:// 事件
         void resizeEvent(QResizeEvent* resizeEvent);
@@ -39,11 +35,16 @@ namespace PhotoEdit {
         // 测试功能
         QPixmap initQPixmap(QImage& image);
         void setPixmap(QImage& image);
+
+    public slots:
+        void readImage();
+
     private:
         Ui::PhotoEditorMainWindow* ui;
         QLabel* imagelable;
         QWidget* centerwindows;
         WorkSpace* m_workspace;
+        ToolBar* m_toolbar;
     };
 }
 #endif // PHOTOEDITORMAINWINDOW_H

@@ -5,6 +5,7 @@ namespace PhotoEdit
 {
 	struct PainterWidget::PainterWidgetData
 	{
+		WorkSpace* parent;
 		QPainter painter;
 		PaintSignal callback;
 		void* data;
@@ -15,6 +16,7 @@ namespace PhotoEdit
 	{
 		this->m_data->callback = nullptr;
 		this->m_data->data = nullptr;
+		this->m_data->parent = parent;
 
 		// ÉèÖÃ´óÐ¡
 		this->setMinimumSize(minwsize, minhsize);

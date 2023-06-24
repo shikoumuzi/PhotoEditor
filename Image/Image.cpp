@@ -44,7 +44,10 @@ namespace PhotoEdit {
 
 	int Image::imRead(const Path& path)
 	{
-		this->m_data->m = cv::Mat( cv::imread(path.string()));
+		qDebug(path.string().c_str());
+
+		this->m_data->m = cv::Mat(cv::imread(path.string()));
+
 		if (this->m_data->m.empty())
 		{
 			qWarning("Image::imread: read failed");

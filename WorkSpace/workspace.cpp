@@ -10,13 +10,13 @@
 #include"qevent.h"
 #include"../Widget/ControlBaseBox.h"
 #include<qboxlayout.h>
-
+#include"../ToolBar/ToolBar.h"
+#include<qurl.h>
 namespace PhotoEdit
 {
 	struct WorkSpace::WorkSpaceData
 	{
 		PainterWidget* painter;
-		
 		ControlBaseBox* control_base_box;
 		std::array<QWidget*, __WORKSPACE_FUNCTION_NUM__> control_box;
 
@@ -25,6 +25,7 @@ namespace PhotoEdit
 
 	WorkSpace::WorkSpace():m_data(new WorkSpaceData)
 	{
+
 		this->m_data->image = new Image;
 		auto desktop = QDesktopWidget();
 
@@ -39,6 +40,8 @@ namespace PhotoEdit
 		this->setAutoFillBackground(true);
 		this->setPalette(pal);
 
+
+		// 设置内容
 		// 总布局
 		QHBoxLayout* total_layout = new QHBoxLayout();
 
@@ -88,7 +91,7 @@ namespace PhotoEdit
 
 	void WorkSpace::initControlBoard(int minwsize, int minhsize)
 	{
-		this->m_data->control_base_box = new ControlBaseBox(minwsize, minhsize);
+		this->m_data->control_base_box = new ControlBaseBox(this, minwsize, minhsize);
 
 		for (QWidget*& x : this->m_data->control_box)
 		{
@@ -137,8 +140,9 @@ namespace PhotoEdit
 
 	void WorkSpace::readImage()
 	{
-		QString qpath = QFileDialog::getExistingDirectory(this, "getExistingDirectory");
-		this->m_data->image->imRead(qpath.toStdString());// 读取图像
+		QUrl qpath = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QString(), "Images(*.png *.jpg)");
+		qDebug(qpath.toLocalFile().toStdString().c_str());
+		this->m_data->image->imRead(qpath.toLocalFile().toStdString());// 读取图像
 		this->m_data->painter->begin(this->m_data->image->toQImage());// 加载图像到工作区
 	}
 

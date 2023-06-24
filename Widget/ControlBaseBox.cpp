@@ -2,8 +2,15 @@
 
 namespace PhotoEdit
 {
-	ControlBaseBox::ControlBaseBox(int minwsize, int minhsize)
+	struct ControlBaseBox::ControlBaseBoxData
 	{
+		WorkSpace* parent;
+	};
+
+	ControlBaseBox::ControlBaseBox(WorkSpace* parent, int minwsize, int minhsize):m_data(new ControlBaseBoxData)
+	{
+		this->m_data->parent = parent;
+
 		// ÉèÖÃ´óÐ¡
 		this->setMinimumSize(minwsize, minhsize);
 		this->setFixedSize(minwsize, minhsize);
@@ -20,6 +27,8 @@ namespace PhotoEdit
 
 	ControlBaseBox::~ControlBaseBox()
 	{
+		delete this->m_data;
+		this->m_data = nullptr;
 	}
 
 }

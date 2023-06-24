@@ -7,6 +7,9 @@
 #include<qwidget.h>
 #include<boost/filesystem.hpp>
 #include<qapplication.h>
+#include<qtoolbar.h>
+#include<qmenubar.h>
+
 namespace PhotoEdit {
 
 #define __WORKSPACE_FUNCTION_NUM__ 4
@@ -16,6 +19,7 @@ namespace PhotoEdit {
 		using Path = boost::filesystem::path;
 	public:
 		struct WorkSpaceData;
+		friend class ToolBar;
 	public:
 		WorkSpace();
 		~WorkSpace();
@@ -29,7 +33,8 @@ namespace PhotoEdit {
 		void addControlBoard();
 		void deleteControlBoard();
 
-	public:
+
+	public:// ÊÂ¼þº¯Êý
 		void resizeEvent(QResizeEvent* event);
 
 

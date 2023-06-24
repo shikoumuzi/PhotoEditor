@@ -98,7 +98,6 @@ else()
              "Image/Image.h" 
              "Image/Image.cpp" 
              "Operator/Operator.h" 
-             "Thread/ThreadFactory.h" 
              "Operator/OperatorFactory.h" 
              "Error/error.h" 
              "Operator/Operator.cpp" 
@@ -109,7 +108,7 @@ else()
              "Coordinates/Coordinates.h" 
              "Coordinates/Coordinates.cpp" 
              "Widget/ControlBaseBox.h"
-             "Widget/ControlBaseBox.cpp")
+             "Widget/ControlBaseBox.cpp" "ToolBar/ToolBar.h" "ToolBar/ToolBar.cpp"  "Thread/ReadRunable.h")
     endif()
 endif()
 
